@@ -19,8 +19,9 @@ const DISHES = ['bread', 'grapes', 'fish', 'fruit', 'cake'];
 MG.add({
   id: 'feast', stage: 'new', cmd: 'FEAST!', hint: 'drag', time: 6, mood: 'party', winText: 'Dig in!',
   card: {
-    title: 'A feast for everyone', ref: 'Isaiah 25:6–9 and Luke 14:15–24', kind: 'Poem',
-    text: 'The book of Isaiah has a poem about a great feast that God will make on a mountain for all the peoples of the world, with the very best food. In the Gospel of Luke, Jesus tells a story about a feast where the host sends out to invite everyone, until every seat at the table is full.',
+    title: 'A feast for everyone', ref: 'Isaiah 25 and Luke 14', kind: 'Poem and Parable',
+    text: 'The book of Isaiah has a poem about a feast God will make on a mountain for all the peoples of the world. In the Gospel of Luke, Jesus tells a story about a dinner where the host invites people who are poor, sick or left out, until every seat is full.',
+    note: 'Isaiah wrote a poem of hope, and Jesus told a parable: a made-up story that teaches something true.',
     ask: 'If you could set a big table for a party, who would you make sure to invite?',
   },
   init(g) {
@@ -45,7 +46,7 @@ MG.add({
   up(g, x, y) {
     const s = g.s, q = s.drag; s.drag = null; if (!q) return;
     let best = null, bd = 9e9; for (const st of s.seats) { if (st.who) continue; const d = Math.abs(st.x - q.x); if (d < bd) { bd = d; best = st; } }
-    if (best && q.y < 500 && bd < 60) {
+    if (best && q.y < 530 && bd < 62) {
       best.who = q; best.t = g.t; q.seat = best; g.sfx('ding'); g.sfx('munch');
       g.burst(best.x, TOP - 30, ['#ffd45a', '#ffffff', '#ff9ac0', '#9fe0ff', '#b8f0a0'], 18, 190);
       if (s.seats.every(st => st.who)) { g.win(); g.sfx('cheer'); g.sfx('tambourine'); }

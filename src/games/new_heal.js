@@ -29,7 +29,8 @@ MG.add({
     s.fall = [42, 56, 70][g.level] * Math.sqrt(g.speed);
     s.people = ORDER[n].map((k, i) => { const [x, y, sc] = SPOTS[k]; return { x, y, sc, look: looks[i], healT: -1, phase: Math.random() * 6, flower: FRUIT[(i * 5 + 2) % 12] }; });
     s.leaves = []; s.fly = []; s.spawnT = 0; s.held = null;
-    for (let i = 0; i < 3; i++) spawn(s, 250 + i * 50);
+    for (let i = 0; i < 2; i++) spawn(s, 300 + i * 60);
+    s.every = 0.62 / Math.sqrt(g.speed);
   },
   down(g, x, y) {
     const s = g.s; let best = null, bd = 44;
@@ -47,7 +48,7 @@ MG.add({
   },
   update(g, dt) {
     const s = g.s;
-    s.spawnT -= dt; if (s.spawnT <= 0 && !g.done) { s.spawnT = 0.5 + Math.random() * 0.2; spawn(s, 236); }
+    s.spawnT -= dt; if (s.spawnT <= 0 && !g.done) { s.spawnT = s.every * (0.85 + Math.random() * 0.3); spawn(s, 236); }
     for (const l of s.leaves) { l.y += l.vy * dt; l.ph += dt; l.x += Math.sin(l.ph * 2.2) * 34 * dt; l.rot = Math.sin(l.ph * 2.2) * 0.6; }
     for (const l of s.leaves) if (l.y > 560) l.fade = (l.fade || 0) + dt * 3;
     s.leaves = s.leaves.filter(l => (l.fade || 0) < 1);
