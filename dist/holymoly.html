@@ -3126,6 +3126,459 @@ function butterfly(c, x, y, ph, col) {
 })();
 </script>
 <script>
+// ---- family_count.js ----
+(() => {
+// COUNT! — God takes Abraham outside and says: count the stars, if you can; your family will be that many (Genesis 15:5).
+// Every tap bursts new stars into the sky. Nobody could count them all, so any attempt wins; the more stars, the happier Abraham gets.
+const HORIZON = 470;
+const STAR_COLS = ['#fff8e0', '#ffe6a8', '#d6e4ff', '#ffd6ec', '#fff2c8'];
+let glowSprite = null;
+function glowImg() {
+  if (glowSprite) return glowSprite;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64; const o = cv.getContext('2d');
+  const g = o.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,250,232,1)'); g.addColorStop(0.12, 'rgba(255,238,200,0.75)'); g.addColorStop(0.4, 'rgba(190,180,255,0.2)'); g.addColorStop(1, 'rgba(160,150,255,0)');
+  o.fillStyle = g; o.fillRect(0, 0, 64, 64); return glowSprite = cv;
+}
+// a Bedouin-style goat-hair tent: a long low roof on poles with an open front. part 'body' before the night tint, 'light' after it.
+function tent(o, x, y, w, h, col, part, lit = 1) {
+  o.save(); o.translate(x, y);
+  const roof = () => { o.beginPath(); o.moveTo(-w / 2, 0); o.lineTo(-w * 0.47, -h * 0.58); o.quadraticCurveTo(-w * 0.38, -h * 0.8, -w * 0.25, -h * 0.96); o.quadraticCurveTo(-w * 0.07, -h * 0.74, w * 0.12, -h); o.quadraticCurveTo(w * 0.3, -h * 0.78, w * 0.46, -h * 0.6); o.lineTo(w / 2, 0); o.closePath(); };
+  const door = () => { o.beginPath(); o.moveTo(-w * 0.06, 0); o.lineTo(-w * 0.04, -h * 0.62); o.lineTo(w * 0.22, -h * 0.66); o.lineTo(w * 0.24, 0); o.closePath(); };
+  if (part === 'body') {
+    o.fillStyle = 'rgba(20,10,30,0.3)'; o.beginPath(); o.ellipse(4, 2, w * 0.56, 7, 0, 0, 7); o.fill();
+    roof(); const g = o.createLinearGradient(0, -h, 0, 0); g.addColorStop(0, P.shade(col, 0.18)); g.addColorStop(1, P.shade(col, -0.2)); o.fillStyle = g; o.fill();
+    o.save(); roof(); o.clip(); o.strokeStyle = P.rgba(P.shade(col, 0.3), 0.35); o.lineWidth = 2; for (let k = 1; k < 6; k++) { o.beginPath(); o.moveTo(-w / 2, -h * k / 6); o.lineTo(w / 2, -h * k / 6 - 4); o.stroke(); } o.restore();
+    o.strokeStyle = P.shade(col, -0.45); o.lineWidth = 1.6; roof(); o.stroke();
+    o.strokeStyle = '#5a3a24'; o.lineWidth = 2; for (const px of [-0.25, 0.12]) { o.beginPath(); o.moveTo(w * px, -h * 0.98); o.lineTo(w * px, -h * 1.12); o.stroke(); }
+    o.strokeStyle = 'rgba(240,220,190,0.5)'; o.lineWidth = 1; o.beginPath(); o.moveTo(-w * 0.47, -h * 0.58); o.lineTo(-w * 0.62, 2); o.moveTo(w * 0.46, -h * 0.6); o.lineTo(w * 0.62, 2); o.stroke();
+    door(); o.fillStyle = '#2a1414'; o.fill();
+  } else {
+    door(); const lg = o.createRadialGradient(w * 0.09, -h * 0.25, 2, w * 0.09, -h * 0.3, h * 0.8); lg.addColorStop(0, P.rgba('#ffd27a', lit)); lg.addColorStop(0.6, P.rgba('#e07a3a', 0.85 * lit)); lg.addColorStop(1, P.rgba('#5a2a24', 0.9)); o.fillStyle = lg; o.fill();
+    // folded-back door flap
+    o.fillStyle = P.shade(col, -0.05); o.beginPath(); o.moveTo(w * 0.22, -h * 0.66); o.lineTo(w * 0.34, -h * 0.4); o.lineTo(w * 0.24, -h * 0.1); o.closePath(); o.fill();
+    // warm spill onto the ground
+    o.globalCompositeOperation = 'screen'; const sp = o.createRadialGradient(w * 0.09, 4, 2, w * 0.09, 4, w * 0.5); sp.addColorStop(0, P.rgba('#ffb060', 0.45 * lit)); sp.addColorStop(1, 'rgba(255,176,96,0)'); o.fillStyle = sp; o.fillRect(-w * 0.5, -h, w * 1.2, h + 30);
+  }
+  o.restore();
+}
+function paintSky(o) {
+  P.sky(o, W, H, ['#05071e', '#0e1442', '#202468', '#43307a', '#8a4a80', '#d07a7a']);
+  const ag = o.createRadialGradient(180, HORIZON + 30, 10, 180, HORIZON + 30, 300); ag.addColorStop(0, 'rgba(255,160,120,0.45)'); ag.addColorStop(1, 'rgba(255,160,120,0)'); o.fillStyle = ag; o.fillRect(0, 0, W, H);
+  P.stars(o, W, HORIZON - 30, 170, 5, 0);
+}
+function paintMilkyWay(o) {
+  const r = P.rng(41); o.save(); o.translate(180, 250); o.rotate(-0.95);
+  o.globalCompositeOperation = 'screen';
+  for (let i = 0; i < 46; i++) { const x = -420 + i * 19 + (r() - 0.5) * 20, y = (r() - 0.5) * 40, rx = 40 + r() * 50, ry = 18 + r() * 30, c = ['#6a5ad0', '#c08ad8', '#ffe2c8', '#8ab0ff'][i % 4];
+    const g = o.createRadialGradient(x, y, 0, x, y, rx); g.addColorStop(0, P.rgba(c, 0.16 + r() * 0.08)); g.addColorStop(1, P.rgba(c, 0)); o.fillStyle = g; o.beginPath(); o.ellipse(x, y, rx, ry, 0, 0, 7); o.fill(); }
+  o.globalCompositeOperation = 'source-over';
+  for (let i = 0; i < 9; i++) { const x = -300 + i * 70 + r() * 30, y = (r() - 0.5) * 16; o.fillStyle = 'rgba(14,12,48,0.22)'; o.beginPath(); o.ellipse(x, y, 30 + r() * 30, 4 + r() * 6, 0.1, 0, 7); o.fill(); }
+  for (let i = 0; i < 900; i++) { const x = (r() - 0.5) * 900, gy = ((r() + r() + r()) / 3 - 0.5) * 120, s = 0.3 + r() * r() * 1.4; o.fillStyle = P.rgba(r() < 0.8 ? '#fff6e0' : '#cfe0ff', 0.35 + r() * 0.6); o.beginPath(); o.arc(x, gy, s, 0, 7); o.fill(); }
+  o.restore();
+}
+function paintLand(o) {
+  P.hills(o, W, HORIZON + 6, 46, '#5a4a8a', '#3a2c5a', { seed: 3, freq: 0.009, dabs: 30 });
+  P.hills(o, W, HORIZON + 40, 30, '#6a4a6a', '#3e2a44', { seed: 12, freq: 0.014, dabs: 50 });
+  tent(o, 30, 518, 62, 26, '#6a4a3a', 'body'); tent(o, 214, 524, 92, 38, '#5a3e30', 'body');
+  P.camel(o, 300, 532, 0.72, { facing: -1 }); P.camel(o, 330, 538, 0.6, { facing: -1 });
+  P.hills(o, W, 552, 18, '#8a6a6a', '#5a3e4a', { seed: 31, freq: 0.01, dabs: 70 });
+  tent(o, 92, 556, 150, 62, '#4e3428', 'body');
+  // the rise Abraham stands on
+  o.save(); o.beginPath(); o.moveTo(-10, 640); o.lineTo(-10, 600); o.quadraticCurveTo(120, 588, 190, 586); o.quadraticCurveTo(250, 570, 330, 584); o.quadraticCurveTo(360, 588, 370, 594); o.lineTo(370, 640); o.closePath();
+  const fg = o.createLinearGradient(0, 570, 0, 640); fg.addColorStop(0, '#8a6a7a'); fg.addColorStop(1, '#4a3048'); o.fillStyle = fg; o.fill(); o.restore();
+  P.grassTufts(o, W, 586, 640, 40, '#6a7a5a', 14);
+  // night: tint everything painted so far toward moonlit violet (source-atop keeps the sky transparent)
+  o.save(); o.globalCompositeOperation = 'source-atop'; o.fillStyle = 'rgba(28,22,78,0.5)'; o.fillRect(0, 0, W, H);
+  o.globalCompositeOperation = 'source-atop'; const rim = o.createLinearGradient(0, HORIZON - 40, 0, HORIZON + 60); rim.addColorStop(0, 'rgba(255,170,150,0.18)'); rim.addColorStop(1, 'rgba(255,170,150,0)'); o.fillStyle = rim; o.fillRect(0, HORIZON - 40, W, 100); o.restore();
+  tent(o, 30, 518, 62, 26, '#6a4a3a', 'light', 0.6); tent(o, 214, 524, 92, 38, '#5a3e30', 'light', 0.8); tent(o, 92, 556, 150, 62, '#4e3428', 'light', 1);
+}
+function spawnStars(g, x, y) {
+  const s = g.s, inSky = y < HORIZON - 30, n = 6 + Math.floor(Math.random() * 3);
+  if (!inSky) { x = 30 + Math.random() * 300; y = 60 + Math.random() * 340; }
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, d = 12 + Math.random() * 62, big = Math.random() < 0.14;
+    s.stars.push({ sx: x, sy: y, x: Math.max(8, Math.min(W - 8, x + Math.cos(a) * d)), y: Math.max(10, Math.min(HORIZON - 34, y + Math.sin(a) * d * 0.9)), born: g.t + i * 0.012, r: big ? 2.6 + Math.random() * 1.4 : 0.8 + Math.random() * 1.5, col: STAR_COLS[i % STAR_COLS.length], ph: Math.random() * 6 });
+  }
+  if (s.stars.length > 700) s.stars.splice(0, s.stars.length - 700);
+  s.rings.push({ x, y, t: g.t });
+}
+MG.add({
+  id: 'count', stage: 'family', cmd: 'COUNT!', hint: 'mash', time: 4.5, mood: 'night', winOnTimeout: true, winText: 'So many!',
+  card: { title: 'Count the stars', ref: 'Genesis 15', kind: 'Story', text: 'Abraham and Sarah were old and still had no children. One night God told Abraham to look up and count the stars if he could, because one day his family would be that many, and Abraham trusted God.', ask: 'Who is in your family, and who has become like family to you?' },
+  init(g) { const s = g.s; s.stars = []; s.rings = []; s.taps = 0; s.joy = 0; s.joyShow = 0; s.bot = 0; s.shoot = [{ t0: 0.9, x: 330, y: 70 }, { t0: 2.4, x: 150, y: 40 }, { t0: 3.6, x: 260, y: 120 }]; },
+  down(g, x, y) {
+    const s = g.s; s.taps++; spawnStars(g, x, y);
+    g.sfx(s.taps % 3 === 0 ? 'chime' : 'sparkle');
+    if (s.taps === 10) g.sfx('harp'); if (s.taps === 22) { g.sfx('laugh'); g.sfx('cheer'); }
+  },
+  update(g, dt) { const s = g.s; s.joy = Math.min(1, s.taps / 22); s.joyShow += (s.joy - s.joyShow) * Math.min(1, dt * 6); },
+  auto(g, dt, synth) { const s = g.s; s.bot += dt; if (g.t > 0.3 && s.bot > 0.07) { s.bot = 0; const x = 30 + Math.random() * 300, y = 50 + Math.random() * 360; synth('down', x, y); synth('up', x, y); } },
+  draw(g, c) {
+    const s = g.s, t = g.t, joy = s.joyShow;
+    c.drawImage(g.bake('family_count_sky', paintSky), 0, 0, W, H);
+    // the Milky Way brightens as the sky fills
+    c.save(); c.globalAlpha = 0.55 + 0.45 * joy + 0.08 * Math.sin(t * 1.5); c.drawImage(g.bake('family_count_mw', paintMilkyWay), 0, 0, W, H); c.restore();
+    if (joy > 0) { c.save(); c.globalCompositeOperation = 'screen'; const sg = c.createLinearGradient(0, 0, 0, HORIZON); sg.addColorStop(0, `rgba(70,60,190,${0.22 * joy})`); sg.addColorStop(1, `rgba(255,150,190,${0.18 * joy})`); c.fillStyle = sg; c.fillRect(0, 0, W, HORIZON); c.restore(); }
+    P.stars(c, W, HORIZON - 40, 40, 77, t);
+    // shooting stars
+    for (const sh of s.shoot) { const q = (t - sh.t0) / 0.7; if (q < 0 || q > 1) continue; const hx = sh.x - q * 170, hy = sh.y + q * 90; c.save(); c.globalCompositeOperation = 'lighter'; const lg = c.createLinearGradient(hx, hy, hx + 70, hy - 37); lg.addColorStop(0, `rgba(255,248,220,${0.9 * (1 - q)})`); lg.addColorStop(1, 'rgba(255,248,220,0)'); c.strokeStyle = lg; c.lineWidth = 2.2; c.lineCap = 'round'; c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx + 70, hy - 37); c.stroke(); c.drawImage(glowImg(), hx - 10, hy - 10, 20, 20); c.restore(); }
+    // tap rings
+    c.save(); c.globalCompositeOperation = 'lighter';
+    for (const rg of s.rings) { const q = (t - rg.t) / 0.45; if (q < 0 || q > 1) continue; c.strokeStyle = `rgba(255,236,190,${0.6 * (1 - q)})`; c.lineWidth = 3 * (1 - q) + 0.5; c.beginPath(); c.arc(rg.x, rg.y, 8 + q * 46, 0, 7); c.stroke(); c.drawImage(glowImg(), rg.x - 40 * (1 - q), rg.y - 40 * (1 - q), 80 * (1 - q), 80 * (1 - q)); }
+    // the new stars: fly out from the tap, pop, then twinkle
+    const gi = glowImg(), win = g.result === 'win' ? Math.min(1, (t - g.doneAt) * 3) : 0;
+    for (const st of s.stars) {
+      const age = t - st.born; if (age < 0) continue; const k = Math.min(1, age / 0.38), e = 1 - Math.pow(1 - k, 3);
+      const x = st.sx + (st.x - st.sx) * e, y = st.sy + (st.y - st.sy) * e;
+      const pop = k < 1 ? e * 1.5 : 1 + 0.25 * Math.sin(t * 5 + st.ph) + win * 0.4 * Math.max(0, Math.sin(t * 9 + st.ph * 3));
+      if (k < 1) { c.strokeStyle = P.rgba(st.col, 0.35 * (1 - k)); c.lineWidth = st.r; c.beginPath(); c.moveTo(st.sx + (st.x - st.sx) * e * 0.4, st.sy + (st.y - st.sy) * e * 0.4); c.lineTo(x, y); c.stroke(); }
+      const gs = st.r * 11 * pop; c.drawImage(gi, x - gs / 2, y - gs / 2, gs, gs);
+      c.fillStyle = st.col; c.beginPath(); c.arc(x, y, st.r * 0.8 * Math.max(0.3, pop), 0, 7); c.fill();
+      if (st.r > 2.4) { const L = st.r * 4.5 * pop; c.fillStyle = P.rgba(st.col, 0.85); c.beginPath(); c.ellipse(x, y, L, st.r * 0.32, 0, 0, 7); c.ellipse(x, y, st.r * 0.32, L, 0, 0, 7); c.fill(); }
+    }
+    c.restore();
+    c.drawImage(g.bake('family_count_land', paintLand), 0, 0, W, H);
+    // campfire: flicker and warm glow
+    const fx = 168, fy = 588, fl = 0.85 + 0.15 * Math.sin(t * 17) * Math.sin(t * 7.3);
+    c.save(); c.globalCompositeOperation = 'screen'; const fgw = c.createRadialGradient(fx, fy - 8, 2, fx, fy - 8, 90 * fl); fgw.addColorStop(0, 'rgba(255,190,100,0.55)'); fgw.addColorStop(1, 'rgba(255,140,80,0)'); c.fillStyle = fgw; c.fillRect(fx - 100, fy - 110, 200, 160); c.restore();
+    c.fillStyle = '#4a2a1a'; c.save(); c.translate(fx, fy); c.rotate(0.3); c.fillRect(-12, -3, 24, 5); c.rotate(-0.6); c.fillRect(-12, -3, 24, 5); c.restore();
+    for (let i = 0; i < 3; i++) { const hgt = (16 - i * 4) * fl * (1 + 0.15 * Math.sin(t * 13 + i * 2)); c.fillStyle = ['#e8582a', '#ffa83a', '#fff0a0'][i]; c.beginPath(); c.moveTo(fx - 8 + i * 2.5, fy - 1); c.quadraticCurveTo(fx - 7 + i * 2, fy - hgt * 0.6, fx + Math.sin(t * 9 + i) * 2, fy - hgt); c.quadraticCurveTo(fx + 7 - i * 2, fy - hgt * 0.6, fx + 8 - i * 2.5, fy - 1); c.closePath(); c.fill(); }
+    for (let i = 0; i < 4; i++) { const q = (t * 0.8 + i * 0.25) % 1; c.fillStyle = `rgba(255,200,120,${1 - q})`; c.beginPath(); c.arc(fx + Math.sin(t * 3 + i * 2) * 8, fy - 14 - q * 50, 1.3, 0, 7); c.fill(); }
+    // Sarah peeks out of the big tent and joins the joy
+    const sj = joy > 0.45;
+    P.person(c, 106, 556, 0.82, { skin: P.SKIN[2], robe: P.CLOTH.plum, stripe: P.CLOTH.gold, hairStyle: 'bun', hair: P.HAIR[5], expr: sj ? 'laugh' : 'happy', arms: sj ? 'wave' : 'pray', t, phase: 1, bounce: sj ? 2 : 0.6 });
+    // Abraham: looks up, jaw drops, then laughs and dances
+    const dance = joy > 0.62 || (g.result === 'win' && s.taps > 12), wow = joy > 0.2;
+    const ax = 250 + (dance ? Math.sin(t * 8) * 6 : 0), ay = 588 - (dance ? Math.abs(Math.sin(t * 8)) * 9 : 0);
+    c.save(); c.translate(ax, ay); if (dance) c.rotate(Math.sin(t * 8) * 0.1);
+    const rg = c.createRadialGradient(0, -60, 4, 0, -60, 90); rg.addColorStop(0, `rgba(190,180,255,${0.12 + 0.2 * joy})`); rg.addColorStop(1, 'rgba(190,180,255,0)'); c.fillStyle = rg; c.fillRect(-90, -150, 180, 160);
+    P.person(c, 0, 0, 1.8, { skin: P.SKIN[2], robe: P.CLOTH.terracotta, stripe: P.CLOTH.cream, sash: P.CLOTH.gold, beard: '#ece6de', hair: P.HAIR[5], hairStyle: 'short', expr: dance ? 'laugh' : wow ? 'wow' : 'happy', arms: dance ? 'cheer' : wow ? 'up' : 'reach', t, bounce: dance ? 0 : 0.8, facing: -1 });
+    c.restore();
+    if (dance) { c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 6; i++) { const a = t * 3 + i * 1.05, q = (t * 1.2 + i / 6) % 1; c.fillStyle = `rgba(255,236,170,${0.9 * (1 - q)})`; drawStar(c, ax + Math.cos(a) * (40 + q * 30), ay - 80 + Math.sin(a) * 30 - q * 30, 4 * (1 - q) + 1.5, a); } c.restore(); }
+    P.vignette(c, W, H, 0.32); P.grain(c, W, H, 0.06);
+  },
+});
+
+})();
+</script>
+<script>
+// ---- family_forgive.js ----
+(() => {
+// FORGIVE! — Joseph, now a great ruler in Egypt, tells his frightened brothers who he is, forgives them and hugs them all (Genesis 45).
+// Drag Joseph across the palace hall into his crying brothers for a big group hug.
+const FLOOR = 470;
+function column(o, x, y0, y1, w) {
+  const g = o.createLinearGradient(x - w / 2, 0, x + w / 2, 0); g.addColorStop(0, '#c8a070'); g.addColorStop(0.35, '#f6e2b8'); g.addColorStop(1, '#a87a50'); o.fillStyle = g; o.fillRect(x - w / 2, y0, w, y1 - y0);
+  // painted bands
+  for (const [yy, c] of [[y1 - 40, '#2f8f8a'], [y1 - 34, '#e9b949'], [y1 - 28, '#c9443c'], [y0 + 34, '#c9443c'], [y0 + 40, '#e9b949'], [y0 + 46, '#2f8f8a']]) { o.fillStyle = c; o.fillRect(x - w / 2, yy, w, 5); }
+  o.strokeStyle = 'rgba(120,80,40,0.25)'; o.lineWidth = 1; for (let k = 1; k < 4; k++) { o.beginPath(); o.moveTo(x - w / 2 + k * w / 4, y0 + 52); o.lineTo(x - w / 2 + k * w / 4, y1 - 46); o.stroke(); }
+  // papyrus-bundle capital
+  o.fillStyle = '#5a9a6a'; o.beginPath(); o.moveTo(x - w / 2, y0 + 30); o.quadraticCurveTo(x - w * 0.95, y0 + 6, x - w * 0.8, y0); o.lineTo(x + w * 0.8, y0); o.quadraticCurveTo(x + w * 0.95, y0 + 6, x + w / 2, y0 + 30); o.closePath(); o.fill();
+  o.fillStyle = '#e9b949'; o.fillRect(x - w * 0.85, y0 - 6, w * 1.7, 7);
+  o.fillStyle = '#d8b888'; o.fillRect(x - w * 0.7, y1, w * 1.4, 8);
+}
+function paintHall(o) {
+  // back wall glowing with afternoon light
+  const wg = o.createLinearGradient(0, 0, 0, FLOOR); wg.addColorStop(0, '#7a4a3a'); wg.addColorStop(0.4, '#c88a5a'); wg.addColorStop(1, '#f2c890'); o.fillStyle = wg; o.fillRect(0, 0, W, FLOOR);
+  // a big doorway to the Nile at sunset in the middle
+  o.save(); o.beginPath(); o.rect(120, 150, 120, 270); o.clip();
+  P.sky(o, W, 420, ['#ffb070', '#ffd090', '#fff0c0'], { x: 180, y: 330, r: 18, color: '#ffe0a0', glow: 120 });
+  P.hills(o, W, 360, 6, '#e8a060', '#c07a48', { seed: 81, dabs: 0, bottom: 420 });
+  // pyramids on the horizon
+  for (const [px, ph] of [[150, 40], [200, 30]]) { o.fillStyle = '#d89a60'; o.beginPath(); o.moveTo(px - ph, 362); o.lineTo(px, 362 - ph); o.lineTo(px + ph, 362); o.fill(); o.fillStyle = '#b8784a'; o.beginPath(); o.moveTo(px, 362 - ph); o.lineTo(px + ph, 362); o.lineTo(px + ph * 0.3, 362); o.fill(); }
+  P.water(o, W, 372, 420, '#3a7a9a', '#9ad0d8', 0, { waves: 3 });
+  P.palm(o, 140, 400, 0.6, 0.2, 0, '#4a8a4a'); P.palm(o, 228, 404, 0.5, -0.2, 0, '#4a8a4a');
+  o.restore();
+  o.strokeStyle = '#8a5a30'; o.lineWidth = 6; o.strokeRect(117, 147, 126, 276);
+  o.fillStyle = '#e9b949'; o.fillRect(108, 136, 144, 12); o.fillStyle = '#2f8f8a'; o.fillRect(108, 130, 144, 6);
+  // a winged sun disc above the door
+  o.fillStyle = '#e9b949'; o.beginPath(); o.arc(180, 112, 10, 0, 7); o.fill(); o.fillStyle = '#2f8f8a'; for (const d of [-1, 1]) { o.beginPath(); o.moveTo(180 + d * 10, 110); o.quadraticCurveTo(180 + d * 40, 98, 180 + d * 62, 108); o.quadraticCurveTo(180 + d * 40, 112, 180 + d * 10, 118); o.fill(); }
+  // ceiling beams and painted glyph bands on the upper wall
+  o.fillStyle = '#4a2a24'; o.fillRect(0, 0, W, 14); for (let x = 10; x < W; x += 40) { o.fillStyle = '#5a3428'; o.fillRect(x, 0, 18, 22); o.fillStyle = '#e9b949'; o.fillRect(x, 20, 18, 3); }
+  const r = P.rng(99), glyph = (x, y, k, col) => { o.fillStyle = col; o.strokeStyle = col; o.lineWidth = 1.6; o.beginPath();
+    if (k === 0) { o.ellipse(x, y, 5, 3, 0, 0, 7); o.fill(); o.fillStyle = '#f6e6c8'; o.beginPath(); o.arc(x, y, 1.4, 0, 7); o.fill(); }
+    else if (k === 1) { o.moveTo(x - 5, y + 4); o.quadraticCurveTo(x, y - 6, x + 5, y + 4); o.stroke(); o.beginPath(); o.arc(x + 4, y - 3, 1.8, 0, 7); o.fill(); }
+    else if (k === 2) { for (let i = 0; i < 3; i++) { o.moveTo(x - 5, y - 3 + i * 3); for (let xx = -5; xx <= 5; xx += 2.5) o.lineTo(x + xx, y - 3 + i * 3 + (xx % 5 ? -1 : 1)); } o.stroke(); }
+    else if (k === 3) { o.moveTo(x, y - 6); o.lineTo(x, y + 6); o.moveTo(x - 4, y - 2); o.lineTo(x + 4, y - 2); o.stroke(); o.beginPath(); o.arc(x, y - 6, 2.4, 0, 7); o.stroke(); }
+    else { o.moveTo(x - 4, y + 5); o.lineTo(x, y - 5); o.lineTo(x + 4, y + 5); o.closePath(); o.fill(); } };
+  for (const [y0, yy] of [[30, 44]]) { o.fillStyle = 'rgba(250,226,180,0.18)'; o.fillRect(0, y0, W, 28); for (let x = 12; x < W; x += 16) glyph(x, yy, Math.floor(r() * 5), ['#2f6f8a', '#8a3a2a', '#3a6a3a', '#5a3a6a'][Math.floor(r() * 4)]); }
+  // wall frieze of lotus flowers
+  o.fillStyle = '#2f6f8a'; o.fillRect(0, 62, W, 18); for (let x = 6; x < W; x += 18) { o.fillStyle = '#f2e6cf'; o.beginPath(); o.moveTo(x, 78); o.quadraticCurveTo(x - 6, 66, x, 64); o.quadraticCurveTo(x + 6, 66, x, 78); o.fill(); o.fillStyle = '#e07a8a'; o.beginPath(); o.arc(x + 9, 72, 2.4, 0, 7); o.fill(); }
+  // shafts of light from the door
+  o.save(); o.globalCompositeOperation = 'screen'; for (let i = 0; i < 4; i++) { const g = o.createLinearGradient(180, 300, 180 + (i - 1.5) * 60, 600); g.addColorStop(0, 'rgba(255,220,150,0.3)'); g.addColorStop(1, 'rgba(255,220,150,0)'); o.fillStyle = g; o.beginPath(); o.moveTo(130 + i * 25, 420); o.lineTo(150 + i * 25, 420); o.lineTo(170 + (i - 1.5) * 90, 640); o.lineTo(130 + (i - 1.5) * 90, 640); o.closePath(); o.fill(); } o.restore();
+  // polished floor with reflections
+  const fg = o.createLinearGradient(0, FLOOR - 50, 0, H); fg.addColorStop(0, '#e8c898'); fg.addColorStop(1, '#a87a58'); o.fillStyle = fg; o.fillRect(0, FLOOR - 50, W, H);
+  o.strokeStyle = 'rgba(120,70,40,0.25)'; o.lineWidth = 1; for (let k = 0; k < 8; k++) { const y = FLOOR - 50 + k * k * 3.6; o.beginPath(); o.moveTo(0, y); o.lineTo(W, y); o.stroke(); } for (let k = -6; k <= 6; k++) { o.beginPath(); o.moveTo(180 + k * 30, FLOOR - 50); o.lineTo(180 + k * 110, H); o.stroke(); }
+  const rf = o.createRadialGradient(180, 480, 10, 180, 500, 180); rf.addColorStop(0, 'rgba(255,236,190,0.45)'); rf.addColorStop(1, 'rgba(255,236,190,0)'); o.fillStyle = rf; o.fillRect(0, FLOOR - 50, W, H);
+  // a long red runner rug
+  o.fillStyle = '#b8443a'; o.beginPath(); o.moveTo(150, FLOOR - 50); o.lineTo(210, FLOOR - 50); o.lineTo(260, H); o.lineTo(100, H); o.closePath(); o.fill();
+  o.strokeStyle = '#e9b949'; o.lineWidth = 3; o.beginPath(); o.moveTo(156, FLOOR - 50); o.lineTo(110, H); o.moveTo(204, FLOOR - 50); o.lineTo(250, H); o.stroke();
+  column(o, 40, 80, FLOOR - 40, 44); column(o, 320, 80, FLOOR - 40, 44);
+  // potted palms and lamps at the sides
+  for (const x of [88, 272]) { o.fillStyle = '#c8783a'; o.beginPath(); o.moveTo(x - 12, FLOOR - 70); o.lineTo(x + 12, FLOOR - 70); o.lineTo(x + 8, FLOOR - 46); o.lineTo(x - 8, FLOOR - 46); o.fill(); P.palm(o, x, FLOOR - 70, 0.38, 0, 0, '#4a8a4a'); }
+}
+// one brother: crying and ashamed until the hug, then laughing; he leans in to hug when hugged
+function brother(c, b, t, hug, joy, sway) {
+  const q = hug, x = b.x + sway + (b.hx - b.x - sway) * q, y = b.y + (b.hy - b.y) * q;
+  c.save(); c.translate(x, y); c.rotate(joy ? b.lean * q : 0);
+  P.person(c, 0, 0, b.s, { skin: b.skin, robe: b.robe, stripe: b.stripe, hair: b.hair, hairStyle: b.hs, beard: b.beard, head: b.head, headCol: b.hc, expr: joy ? 'laugh' : 'sad', arms: joy ? (b.out ? 'out' : 'reach') : (b.i % 2 ? 'pray' : 'down'), facing: joy ? b.hf : b.f, t, phase: b.i, bounce: joy ? 1.6 : 0.6 });
+  c.restore();
+  if (!joy && x) { // tears
+    const hy = y - (40 + 15) * b.s - 1 * b.s, hr = 16 * b.s;
+    for (const sd of [-1, 1]) { const ex = x + sd * hr * 0.37 * b.f + hr * 0.08 * b.f, k = (t * 1.6 + b.i * 0.3 + (sd > 0 ? 0.5 : 0)) % 1; c.fillStyle = `rgba(150,210,255,${0.9 * (1 - k)})`; c.beginPath(); const ty = hy + hr * 0.4 + k * 26; c.moveTo(ex, ty - 4); c.quadraticCurveTo(ex + 3, ty + 1, ex, ty + 3); c.quadraticCurveTo(ex - 3, ty + 1, ex, ty - 4); c.fill(); }
+  }
+}
+function joseph(c, x, y, s, t, o) {
+  P.person(c, x, y, s, { skin: P.SKIN[2], robe: P.CLOTH.white, stripe: P.CLOTH.gold, sash: P.CLOTH.royal, hair: P.HAIR[0], hairStyle: 'short', expr: o.expr, arms: o.arms, facing: o.f, t, bounce: o.bounce ?? 1.2, hold: null });
+  // vizier finery: a broad jewelled collar and a gold chain (Genesis 41:42)
+  const by = y - 40 * s, hr = 16 * s;
+  c.save(); c.translate(x, by + 2 * s); c.scale(s * o.f, s);
+  for (const [r, col] of [[15, '#2f8f8a'], [12, '#e9b949'], [9, '#c9443c'], [6.5, '#e9b949']]) { c.fillStyle = col; c.beginPath(); c.ellipse(0, -2, r, r * 0.55, 0, 0, Math.PI); c.fill(); }
+  c.fillStyle = '#ffe9a0'; for (let i = 0; i < 7; i++) { const a = 0.15 * Math.PI + i * 0.7 * Math.PI / 6; c.beginPath(); c.arc(Math.cos(a) * 13.5, -2 + Math.sin(a) * 7.4, 1.3, 0, 7); c.fill(); }
+  c.restore();
+  // a striped linen headdress over his short hair
+  c.save(); c.translate(x, y); c.scale(s * o.f, s); const hy = -40 - 15, R = 16;
+  c.fillStyle = '#f6efe0'; c.strokeStyle = '#a8946a'; c.lineWidth = 1.4;
+  c.beginPath(); c.moveTo(-R - 2, hy + 2); c.quadraticCurveTo(-R * 1.1, hy - R * 1.2, 0, hy - R * 1.12); c.quadraticCurveTo(R * 1.1, hy - R * 1.2, R + 2, hy + 2); c.lineTo(R + 6, hy + 24); c.lineTo(R - 1, hy + 24); c.lineTo(R - 2, hy - R * 0.35); c.quadraticCurveTo(0, hy - R * 0.62, -R + 2, hy - R * 0.35); c.lineTo(-R + 1, hy + 24); c.lineTo(-R - 6, hy + 24); c.closePath(); c.fill(); c.stroke();
+  c.strokeStyle = '#3f6faf'; c.lineWidth = 1.6; for (const yy of [hy + 6, hy + 12, hy + 18]) { c.beginPath(); c.moveTo(-R - 3.5, yy); c.lineTo(-R + 1, yy); c.moveTo(R - 1, yy); c.lineTo(R + 4.5, yy); c.stroke(); }
+  c.fillStyle = '#e9b949'; c.fillRect(-R + 1, hy - R * 0.5, 2 * R - 2, 3.2);
+  c.restore();
+}
+function heart(c, x, y, r) { c.beginPath(); c.moveTo(x, y + r * 0.9); c.bezierCurveTo(x - r * 1.6, y - r * 0.2, x - r * 0.7, y - r * 1.3, x, y - r * 0.45); c.bezierCurveTo(x + r * 0.7, y - r * 1.3, x + r * 1.6, y - r * 0.2, x, y + r * 0.9); c.fill(); }
+MG.add({
+  id: 'forgive', stage: 'family', cmd: 'FORGIVE!', hint: 'drag', time: 5, mood: 'bright', winText: 'Family!',
+  card: { title: 'Joseph forgives', ref: 'Genesis 37–45', kind: 'Story', text: 'Joseph\'s older brothers were jealous of him and sold him as a slave, but years later he became a great ruler in Egypt. When his hungry brothers came for food, Joseph told them who he was, forgave them, and hugged them as he cried for joy.', ask: 'Is there someone in your family you need to forgive, or to say sorry to?' },
+  init(g) {
+    const s = g.s, n = [3, 4, 5][g.level];
+    const skins = [P.SKIN[1], P.SKIN[3], P.SKIN[2], P.SKIN[0], P.SKIN[3]], robes = [[P.CLOTH.rust, P.CLOTH.cream], [P.CLOTH.olive, P.CLOTH.sand], [P.CLOTH.indigo, P.CLOTH.saffron], [P.CLOTH.teal, P.CLOTH.cream], [P.CLOTH.brown, P.CLOTH.terracotta]];
+    const hairs = [[P.HAIR[1], 'short', true, 'none'], [P.HAIR[0], 'curly', true, 'none'], [P.HAIR[2], 'short', '#4a3020', 'wrap'], [P.HAIR[3], 'curly', true, 'none'], [P.HAIR[0], 'short', false, 'wrap']];
+    // brothers huddle on the right; Benjamin (the youngest, no beard) at the front
+    const spots = [[262, 560], [312, 548], [292, 600], [236, 606], [334, 604]];
+    s.bros = Array.from({ length: n }, (_, i) => ({ i, x: spots[i][0], y: spots[i][1], s: 1.35, skin: skins[i], robe: robes[i][0], stripe: robes[i][1], hair: hairs[i][0], hs: hairs[i][1], beard: i === n - 1 ? false : hairs[i][2], head: hairs[i][3], hc: P.CLOTH.cream, f: -1, cheer: i % 2 === 0 }));
+    s.bros.sort((a, b) => a.y - b.y);
+    const cx = s.bros.reduce((a, b) => a + b.x, 0) / n, cy = s.bros.reduce((a, b) => a + b.y, 0) / n;
+    s.target = { x: cx, y: cy }; s.hug = { x: 196, y: 580 };
+    // where each brother ends up in the hug: in a ring around Joseph, leaning in toward him
+    const ring = [[-50, -22], [52, -20], [-80, 12], [84, 14], [2, -40]];
+    const order = s.bros.map(b => b.i).sort((a, b) => (b === n - 1) - (a === n - 1) || a - b);
+    s.bros.forEach(b => { const [dx, dy] = ring[order.indexOf(b.i)]; b.hx = s.hug.x + dx; b.hy = s.hug.y + dy; b.hf = dx < 0 ? 1 : -1; b.lean = dx < 0 ? 0.12 : -0.12; b.out = Math.abs(dx) > 70 || dx === 2; });
+    s.swayA = [0, 16, 30][g.level];
+    s.j = { x: 64, y: 592, hx: 64, hy: 592 }; s.drag = false; s.hugT = -1; s.reach = [86, 74, 64][g.level]; s.bot = 0;
+    // Egyptian palace servants watching from the sides
+    s.servants = [{ x: 76, y: 456, skin: P.SKIN[4], robe: P.CLOTH.white, stripe: P.CLOTH.teal }, { x: 296, y: 452, skin: P.SKIN[5], robe: P.CLOTH.white, stripe: P.CLOTH.gold }];
+  },
+  down(g, x, y) { const s = g.s, j = s.j; if (s.hugT < 0 && Math.hypot(x - j.x, y - (j.y - 50)) < 70) { s.drag = true; s.ox = j.x - x; s.oy = j.y - y; g.sfx('whoosh'); } },
+  move(g, x, y) { const s = g.s; if (!s.drag) return; s.j.x = Math.max(30, Math.min(330, x + s.ox)); s.j.y = Math.max(500, Math.min(612, y + s.oy)); checkHug(g); },
+  up(g) { const s = g.s; if (!s.drag) return; s.drag = false; checkHug(g); if (s.hugT < 0) g.sfx('swoosh'); },
+  update(g, dt) { const s = g.s, j = s.j; s.sway = s.hugT < 0 ? Math.sin(g.t * 2.2) * s.swayA : s.sway; if (!s.drag && s.hugT < 0) { j.x += (j.hx - j.x) * Math.min(1, dt * 6); j.y += (j.hy - j.y) * Math.min(1, dt * 6); } if (s.drag) { j.hx = j.x; j.hy = j.y; } },
+  auto(g, dt, synth) {
+    const s = g.s, j = s.j; if (g.t < 0.45 || s.hugT >= 0) return;
+    if (!s.drag) { synth('down', j.x, j.y - 50); s.bx = j.x; s.by = j.y - 50; return; }
+    const tx = s.target.x + s.sway - 40, ty = s.target.y - 50, sp = 330 * dt, d = Math.hypot(tx - s.bx, ty - s.by);
+    if (d < sp) { synth('move', tx, ty); synth('up', tx, ty); } else { s.bx += (tx - s.bx) / d * sp; s.by += (ty - s.by) / d * sp; synth('move', s.bx, s.by); }
+  },
+  draw(g, c) {
+    const s = g.s, t = g.t, j = s.j, hugged = s.hugT >= 0, hq = hugged ? Math.min(1, (t - s.hugT) / 0.35) : 0;
+    c.drawImage(g.bake('family_forgive_bg', paintHall), 0, 0, W, H);
+    for (const lx of [88, 272]) { const fl = 0.85 + 0.15 * Math.sin(t * 13 + lx); c.strokeStyle = '#6a4a2a'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(lx, 120); c.lineTo(lx, 236); c.stroke();
+      c.save(); c.globalCompositeOperation = 'screen'; const lg = c.createRadialGradient(lx, 244, 2, lx, 244, 60 * fl); lg.addColorStop(0, 'rgba(255,214,140,0.7)'); lg.addColorStop(1, 'rgba(255,200,120,0)'); c.fillStyle = lg; c.fillRect(lx - 70, 180, 140, 130); c.restore();
+      c.fillStyle = '#c8902a'; c.beginPath(); c.moveTo(lx - 12, 238); c.quadraticCurveTo(lx, 256, lx + 12, 238); c.closePath(); c.fill(); c.fillStyle = '#e9b949'; c.fillRect(lx - 13, 235, 26, 4);
+      c.fillStyle = '#ffd27a'; c.beginPath(); c.ellipse(lx, 230 - fl * 2, 3, 6 * fl, 0, 0, 7); c.fill(); c.fillStyle = '#fff4c8'; c.beginPath(); c.ellipse(lx, 232, 1.5, 3, 0, 0, 7); c.fill(); }
+    // dust motes drifting in the light shafts
+    c.save(); c.globalCompositeOperation = 'screen'; for (let i = 0; i < 16; i++) { const q = (t * 0.05 + i / 16) % 1; c.fillStyle = `rgba(255,236,190,${0.5 * Math.sin(q * Math.PI)})`; c.beginPath(); c.arc(120 + ((i * 47) % 120) + Math.sin(t + i) * 8, 440 - q * 300, 1.4, 0, 7); c.fill(); } c.restore();
+    // servants smile when the family hugs
+    for (const sv of s.servants) P.person(c, sv.x, sv.y, 0.85, { skin: sv.skin, robe: sv.robe, stripe: sv.stripe, hairStyle: 'short', hair: P.HAIR[3], expr: hugged ? 'laugh' : 'surprised', arms: hugged ? 'cheer' : 'down', facing: sv.x < 180 ? 1 : -1, t, phase: sv.x });
+    // a glowing path hint from Joseph to his brothers before the hug
+    if (!hugged) { const p = (t * 1.4) % 1; c.save(); for (let i = 0; i < 6; i++) { const k = (i / 6 + p / 6), x = j.x + (s.target.x + (s.sway || 0) - 30 - j.x) * k, y = j.y - 12 + (s.target.y - j.y) * k; c.fillStyle = `rgba(255,236,160,${0.55 * Math.sin(k * Math.PI)})`; heart(c, x, y - 4, 5); } c.restore();
+      const tx0 = s.target.x + (s.sway || 0), tg = c.createRadialGradient(tx0, s.target.y - 40, 10, tx0, s.target.y - 40, 110); tg.addColorStop(0, `rgba(255,220,170,${0.22 + 0.12 * Math.sin(t * 5)})`); tg.addColorStop(1, 'rgba(255,220,170,0)'); c.fillStyle = tg; c.fillRect(tx0 - 120, s.target.y - 160, 240, 240); }
+    // warm glow behind the group hug
+    if (hugged) { c.save(); c.globalCompositeOperation = 'screen'; const hg = c.createRadialGradient(s.hug.x, s.hug.y - 50, 10, s.hug.x, s.hug.y - 50, 190 * hq); hg.addColorStop(0, 'rgba(255,214,150,0.65)'); hg.addColorStop(1, 'rgba(255,200,150,0)'); c.fillStyle = hg; c.fillRect(0, 200, W, 440); c.restore(); }
+    // draw everyone back to front
+    const sw = s.sway || 0, items = s.bros.map(b => ({ y: b.y + (b.hy - b.y) * hq, d: () => brother(c, b, t, hq, hugged, sw) }));
+    const lift = s.drag ? 8 : 0;
+    items.push({ y: j.y, d: () => { if (s.drag) { c.fillStyle = 'rgba(60,30,30,0.18)'; c.beginPath(); c.ellipse(j.x, j.y, 22, 5, 0, 0, 7); c.fill(); }
+      const jx = hugged ? j.x + (s.hug.x - j.x) * hq : j.x, jy = hugged ? j.y + (s.hug.y - j.y) * hq : j.y;
+      joseph(c, jx, jy - lift, 1.45, t, { expr: hugged ? 'laugh' : 'happy', arms: hugged ? 'out' : s.drag ? 'reach' : 'wave', f: 1, bounce: hugged ? 2 : 1.2 }); } });
+    items.sort((a, b) => a.y - b.y).forEach(it => it.d());
+    if (!hugged && !s.drag) { const p = 0.5 + 0.5 * Math.sin(t * 6); c.save(); c.globalAlpha = 0.6 + 0.4 * p; c.fillStyle = '#fff6c8'; drawStar(c, j.x + 30, j.y - 96, 5 + p * 3, t); c.restore(); }
+    // happy tears turn to hearts and sparkles
+    if (hugged) {
+      for (let i = 0; i < 9; i++) { const k = (t - s.hugT) * 0.9 + i / 9, q = k % 1; c.save(); c.globalAlpha = Math.sin(q * Math.PI); c.fillStyle = ['#ff7a9a', '#ffb0c0', '#ffd45a'][i % 3]; heart(c, s.hug.x + Math.sin(i * 2.1 + t * 2) * 80, s.hug.y - 120 - q * 90, 6 + (i % 3) * 2); c.restore(); }
+      c.save(); c.globalAlpha = 0.5 * hq; c.strokeStyle = '#ffe9a0'; c.lineWidth = 3; c.beginPath(); c.arc(s.hug.x, s.hug.y - 40, 120 + Math.sin(t * 4) * 4, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); c.restore();
+    }
+    P.vignette(c, W, H, 0.28, '#3a1a20'); P.grain(c, W, H, 0.05);
+  },
+});
+function checkHug(g) {
+  const s = g.s, j = s.j; if (s.hugT >= 0) return;
+  if (Math.hypot(j.x - (s.target.x + (s.sway || 0) - 40), j.y - s.target.y) < s.reach) {
+    s.hugT = g.t; s.drag = false; g.sfx('cheer'); g.sfx('laugh'); g.burst(s.hug.x, s.hug.y - 80, ['#ff8aa8', '#ffd45a', '#fff', '#9fe0ff'], 26, 220); g.win();
+  }
+}
+
+})();
+</script>
+<script>
+// ---- family_laugh.js ----
+(() => {
+// LAUGH! — at the oaks of Mamre, old Sarah overhears the visitors say she will have a baby, and she laughs (Genesis 18:12; 21:6).
+// Tap (tickle) Sarah fast to make her giggle harder until she bursts out laughing with joy.
+const SX = 96, SY = 580, SS = 2.3; // Sarah's feet and scale
+function oak(o, x, y, s) {
+  o.save(); o.translate(x, y); o.scale(s, s);
+  o.fillStyle = 'rgba(70,50,30,0.28)'; o.beginPath(); o.ellipse(0, 4, 120, 18, 0, 0, 7); o.fill();
+  // gnarled trunk with two big limbs
+  const tg = o.createLinearGradient(-20, 0, 24, 0); tg.addColorStop(0, '#5a3a24'); tg.addColorStop(0.45, '#8a6040'); tg.addColorStop(1, '#4a2e1c'); o.fillStyle = tg;
+  o.beginPath(); o.moveTo(-24, 4); o.quadraticCurveTo(-12, -40, -16, -96); o.quadraticCurveTo(-44, -120, -78, -132); o.lineTo(-72, -140); o.quadraticCurveTo(-36, -134, -6, -112); o.quadraticCurveTo(-2, -150, -14, -176); o.lineTo(0, -178); o.quadraticCurveTo(14, -146, 10, -112); o.quadraticCurveTo(46, -138, 86, -138); o.lineTo(88, -130); o.quadraticCurveTo(46, -120, 18, -94); o.quadraticCurveTo(14, -40, 28, 4); o.closePath(); o.fill();
+  o.strokeStyle = 'rgba(40,24,14,0.5)'; o.lineWidth = 1.5; for (let i = 0; i < 4; i++) { o.beginPath(); o.moveTo(-10 + i * 7, 0); o.quadraticCurveTo(-6 + i * 5, -50, -4 + i * 4, -96); o.stroke(); }
+  // canopy: dark back layer, mid layer, sunlit top layer
+  const r = P.rng(18), blobs = [];
+  for (let i = 0; i < 34; i++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()); blobs.push([Math.cos(a) * d * 130, -176 + Math.sin(a) * d * 62, 22 + r() * 20]); }
+  for (const [bx, by, br] of blobs) { o.fillStyle = '#2f4a2c'; o.beginPath(); o.arc(bx + 4, by + 10, br, 0, 7); o.fill(); }
+  for (const [bx, by, br] of blobs) { const g = o.createRadialGradient(bx - br * 0.4, by - br * 0.6, 2, bx, by, br); g.addColorStop(0, '#9ac25a'); g.addColorStop(0.55, '#5f8f3e'); g.addColorStop(1, '#3d6634'); o.fillStyle = g; o.beginPath(); o.arc(bx, by, br * 0.92, 0, 7); o.fill(); }
+  for (let i = 0; i < 60; i++) { const bx = (r() - 0.5) * 230, by = -200 + (r() - 0.6) * 90; o.fillStyle = P.rgba(r() < 0.5 ? '#c8e07a' : '#e8f0a0', 0.25 + r() * 0.3); o.beginPath(); o.ellipse(bx, by, 5 + r() * 7, 3 + r() * 3, r() * 3, 0, 7); o.fill(); }
+  o.restore();
+}
+function bigTent(o, part) {
+  // Sarah's tent: a striped goat-hair canopy on poles, front open, flaps tied back; she stands in the doorway
+  o.save(); o.translate(0, 596); o.scale(0.84, 0.84); o.translate(0, -596);
+  const L = 22, R = 206, top = 372, base = 596;
+  const canopy = () => { o.beginPath(); o.moveTo(-40, 420); o.quadraticCurveTo(-10, 360, 40, 330); o.quadraticCurveTo(70, 312, 114, 304); o.quadraticCurveTo(160, 312, 190, 332); o.quadraticCurveTo(236, 360, 262, 418);
+    for (let k = 0; k <= 12; k++) { const x = 262 - k * 302 / 12, y = 418 - (k / 12) * 2 + Math.sin(k * 1.3) * 2; o.quadraticCurveTo(x + 12.5, y + 13, x, y); } o.closePath(); };
+  if (part === 'body') {
+    o.fillStyle = 'rgba(70,40,30,0.32)'; o.beginPath(); o.ellipse(110, base + 2, 160, 14, 0, 0, 7); o.fill();
+    // side walls slanting out to the ground
+    for (const [a, b, c2] of [[[-40, 420], [L, top + 40], [-6, base]], [[262, 418], [R, top + 40], [236, base]]]) { o.beginPath(); o.moveTo(...a); o.lineTo(...b); o.lineTo(b[0], base); o.lineTo(...c2); o.closePath(); const wg = o.createLinearGradient(0, 400, 0, base); wg.addColorStop(0, '#5a3a2c'); wg.addColorStop(1, '#3e281e'); o.fillStyle = wg; o.fill(); o.strokeStyle = '#2e1a12'; o.lineWidth = 1.5; o.stroke(); }
+    // dark warm interior
+    o.beginPath(); o.rect(L, top, R - L, base - top); const dg = o.createLinearGradient(0, top, 0, base); dg.addColorStop(0, '#2a1410'); dg.addColorStop(1, '#5a3020'); o.fillStyle = dg; o.fill();
+    const ig = o.createRadialGradient(114, 500, 10, 114, 500, 120); ig.addColorStop(0, 'rgba(255,170,90,0.4)'); ig.addColorStop(1, 'rgba(255,170,90,0)'); o.fillStyle = ig; o.fill();
+    // hanging lamp, rug and jars inside
+    o.strokeStyle = '#2a1410'; o.lineWidth = 1; o.beginPath(); o.moveTo(64, 410); o.lineTo(64, 440); o.stroke(); o.fillStyle = '#c88a3a'; o.beginPath(); o.ellipse(64, 444, 6, 4, 0, 0, 7); o.fill();
+    o.fillStyle = '#9a3a3a'; o.beginPath(); o.ellipse(114, base - 4, 84, 9, 0, 0, 7); o.fill(); o.strokeStyle = '#e8b04a'; o.lineWidth = 2; o.setLineDash([5, 4]); o.beginPath(); o.ellipse(114, base - 4, 76, 6, 0, 0, 7); o.stroke(); o.setLineDash([]);
+    for (const [px, ps] of [[44, 1], [186, 0.8]]) { const jg = o.createLinearGradient(px - 12, 0, px + 12, 0); jg.addColorStop(0, '#d88a4a'); jg.addColorStop(1, '#8a4a2a'); o.fillStyle = jg; o.beginPath(); o.ellipse(px, 566, 12 * ps, 17 * ps, 0, 0, 7); o.fill(); o.fillStyle = '#7a3a22'; o.fillRect(px - 5 * ps, 546 - 2 * ps, 10 * ps, 6 * ps); }
+    // poles
+    o.fillStyle = '#6a4a2e'; o.fillRect(L - 3, 360, 6, base - 360); o.fillRect(R - 3, 360, 6, base - 360);
+    // canopy with stripes and a sunlit edge
+    canopy(); const cg = o.createLinearGradient(0, 300, 0, 430); cg.addColorStop(0, '#9a6a50'); cg.addColorStop(1, '#5e3c2c'); o.fillStyle = cg; o.fill();
+    o.save(); canopy(); o.clip(); for (let k = 0; k < 8; k++) { o.fillStyle = k % 2 ? 'rgba(250,220,170,0.2)' : 'rgba(40,18,12,0.14)'; o.beginPath(); o.ellipse(114, 470, 70 + k * 22, 160 + k * 10, 0, Math.PI, 0); o.ellipse(114, 470, 59 + k * 22, 149 + k * 10, 0, 0, Math.PI, true); o.fill(); }
+    const lg = o.createLinearGradient(262, 300, 60, 420); lg.addColorStop(0, 'rgba(255,224,160,0.45)'); lg.addColorStop(0.6, 'rgba(255,224,160,0)'); o.fillStyle = lg; o.fillRect(-40, 290, 320, 160); o.restore();
+    o.strokeStyle = '#2e1a12'; o.lineWidth = 2; canopy(); o.stroke();
+    // fringe tassels along the valance
+    o.fillStyle = '#e8b04a'; for (let k = 1; k < 12; k++) { const x = 262 - k * 302 / 12, y = 418 - (k / 12) * 2 + Math.sin(k * 1.3) * 2; o.beginPath(); o.arc(x, y + 4, 2.4, 0, 7); o.fill(); }
+    // guy ropes and pegs
+    o.strokeStyle = 'rgba(250,230,200,0.7)'; o.lineWidth = 1.2; o.beginPath(); o.moveTo(-30, 404); o.lineTo(-60, base); o.stroke(); 
+  } else {
+    // the tied-back door flaps, drawn over Sarah's edges
+    for (const [x0, dir] of [[L + 2, 1], [R - 2, -1]]) { const g = o.createLinearGradient(x0, 0, x0 + 30 * dir, 0); g.addColorStop(0, '#7a5240'); g.addColorStop(1, '#a87a5a'); o.fillStyle = g;
+      o.beginPath(); o.moveTo(x0, 414); o.quadraticCurveTo(x0 + 34 * dir, 440, x0 + 18 * dir, 486); o.quadraticCurveTo(x0 + 6 * dir, 520, x0 + 22 * dir, base); o.lineTo(x0, base); o.closePath(); o.fill(); o.strokeStyle = '#3a2218'; o.lineWidth = 1.5; o.stroke();
+      o.strokeStyle = '#e8b04a'; o.lineWidth = 3; o.beginPath(); o.moveTo(x0, 488); o.quadraticCurveTo(x0 + 10 * dir, 492, x0 + 20 * dir, 486); o.stroke(); }
+  }
+  o.restore();
+}
+function paintBg(o) {
+  P.sky(o, W, H, ['#6ab4e0', '#a8d8ec', '#ffe8c0', '#ffd8a0'], { x: 270, y: 70, r: 26, color: '#fff2b0', glow: 260 });
+  P.cloud(o, 80, 110, 0.7, '#fff8ee', '#e8d0d8', 0.9); P.cloud(o, 300, 170, 0.5, '#fff8ee', '#e8d0d8', 0.8);
+  P.hills(o, W, 350, 50, '#a8b890', '#8aa078', { seed: 41, freq: 0.008, dabs: 30 });
+  P.hills(o, W, 392, 36, '#b8c070', '#8a9a50', { seed: 43, freq: 0.012, dabs: 60, rim: '#f0f0b0' });
+  for (let i = 0; i < 7; i++) P.tree(o, 30 + i * 52, 386 + (i % 2) * 8, 0.32, '#6a8a4a', 60 + i);
+  P.hills(o, W, 440, 14, '#d8c080', '#c09a5a', { seed: 47, freq: 0.01, dabs: 140, rim: '#fff0c0' });
+  P.rays(o, 270, 70, W, H, '#fff4c8', 0.12, 9, 0);
+  oak(o, 278, 470, 0.86);
+  P.grassTufts(o, W, 470, 640, 50, '#9aa84a', 5); P.flowers(o, W, 500, 640, 14, ['#f4d35e', '#ffffff', '#ee8aa0'], 6);
+  bigTent(o, 'body');
+}
+// a seated figure: the standing person clipped at the waist; the meal cloth in front hides the rest
+function seated(c, x, y, s, o) { c.save(); c.beginPath(); c.rect(x - 40 * s, y - 120 * s, 80 * s, 120 * s); c.clip(); P.person(c, x, y + 20 * s, s, o); c.restore(); }
+function spread(o) {
+  // a low cloth spread with the meal Abraham served (Genesis 18:8: bread, curds and milk)
+  const g = o.createLinearGradient(0, 474, 0, 500); g.addColorStop(0, '#f4e6c8'); g.addColorStop(1, '#d8c098'); o.fillStyle = g;
+  o.beginPath(); o.moveTo(206, 478); o.quadraticCurveTo(276, 470, 352, 478); o.lineTo(358, 498); o.quadraticCurveTo(276, 506, 200, 498); o.closePath(); o.fill();
+  o.strokeStyle = '#c86a4a'; o.lineWidth = 3; o.beginPath(); o.moveTo(203, 492); o.quadraticCurveTo(276, 500, 355, 492); o.stroke(); o.strokeStyle = '#e8b04a'; o.lineWidth = 1.5; o.beginPath(); o.moveTo(202, 496); o.quadraticCurveTo(276, 504, 356, 496); o.stroke();
+  P.basket(o, 252, 484, 0.6, 'bread');
+  o.fillStyle = '#b86a3a'; o.beginPath(); o.ellipse(298, 482, 11, 5, 0, 0, 7); o.fill(); o.fillStyle = '#fbf6ea'; o.beginPath(); o.ellipse(298, 480, 9, 3, 0, 0, 7); o.fill();
+  o.fillStyle = '#c8783a'; o.beginPath(); o.ellipse(336, 478, 6, 9, 0, 0, 7); o.fill(); o.fillRect(333, 466, 6, 5);
+  o.fillStyle = '#7a3a6a'; for (const [gx, gy] of [[276, 484], [280, 481], [273, 480], [277, 477]]) { o.beginPath(); o.arc(gx, gy, 2.6, 0, 7); o.fill(); }
+}
+function heart(c, x, y, r) { c.beginPath(); c.moveTo(x, y + r * 0.9); c.bezierCurveTo(x - r * 1.6, y - r * 0.2, x - r * 0.7, y - r * 1.3, x, y - r * 0.45); c.bezierCurveTo(x + r * 0.7, y - r * 1.3, x + r * 1.6, y - r * 0.2, x, y + r * 0.9); c.fill(); }
+function feather(c, x, y, a) {
+  c.save(); c.translate(x, y); c.rotate(a);
+  const g = c.createLinearGradient(0, -26, 0, 4); g.addColorStop(0, '#fff6ee'); g.addColorStop(1, '#f2b8c8'); c.fillStyle = g; c.strokeStyle = '#c87a90'; c.lineWidth = 1.2;
+  c.beginPath(); c.moveTo(0, 4); c.quadraticCurveTo(-11, -10, -2, -28); c.quadraticCurveTo(10, -12, 0, 4); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(0, 8); c.lineTo(-1, -24); c.stroke();
+  c.strokeStyle = 'rgba(200,120,140,0.5)'; for (let i = 0; i < 5; i++) { c.beginPath(); c.moveTo(-0.6, -4 - i * 4.5); c.lineTo(-6, -8 - i * 4.5); c.moveTo(-0.6, -4 - i * 4.5); c.lineTo(4.5, -8 - i * 4.5); c.stroke(); }
+  c.restore();
+}
+MG.add({
+  id: 'laugh', stage: 'family', cmd: 'LAUGH!', hint: 'mash', time: 5, mood: 'bright', winText: 'Ha ha!',
+  card: { title: 'Sarah laughs', ref: 'Genesis 18 and 21', kind: 'Story', text: 'Three visitors came to Abraham\'s tent and said that Sarah would have a baby, even though she was very old. Sarah laughed because it sounded impossible, and a year later she held her baby Isaac, whose name means "he laughs."', ask: 'What is something that made your whole family laugh together?' },
+  init(g) { const s = g.s; s.need = [6, 9, 12][g.level]; s.gig = 0; s.show = 0; s.hits = []; s.hearts = []; s.feather = null; s.bot = 0; s.burstT = -1; s.misses = []; },
+  down(g, x, y) {
+    const s = g.s, hy = SY - 70 * SS;
+    if (Math.abs(x - SX) < 82 && y > hy - 70 && y < SY + 10) {
+      s.gig = Math.min(1, s.gig + 1 / s.need); s.feather = { x, y, t: g.t };
+      const n = 1 + Math.floor(s.gig * 3); for (let i = 0; i < n; i++) s.hearts.push({ x: SX + (Math.random() - 0.5) * 80, y: hy + 10, vx: (Math.random() - 0.5) * 60, vy: -80 - Math.random() * 60, t: g.t, r: 5 + Math.random() * 5 + s.gig * 4, col: ['#ff7a9a', '#ffb0c0', '#ffd45a', '#ff9ad8'][i % 4] });
+      g.burst(x, y, ['#ffd6e6', '#fff6c0', '#ffffff'], 6, 120); g.sfx(s.gig > 0.6 ? 'boing' : 'pop');
+      if (s.gig >= 1) { s.burstT = g.t; g.sfx('laugh'); g.sfx('cheer'); g.burst(SX, hy, ['#ff7a9a', '#ffd45a', '#ffffff', '#9ad8ff'], 30, 260); g.shake(4, 0.3); g.win(); }
+      else if (Math.abs(s.gig - 0.5) < 0.5 / s.need) g.sfx('laugh');
+    } else { s.misses.push({ x, y, t: g.t }); g.sfx('tap'); }
+  },
+  update(g, dt) {
+    const s = g.s; if (!g.done) s.gig = Math.max(0, s.gig - dt * 0.07);
+    s.show += (s.gig - s.show) * Math.min(1, dt * 10);
+    for (const h of s.hearts) { h.x += h.vx * dt; h.y += h.vy * dt; h.vy += 30 * dt; h.vx *= 0.98; }
+    s.hearts = s.hearts.filter(h => g.t - h.t < 1.4);
+  },
+  auto(g, dt, synth) { const s = g.s; s.bot += dt; if (g.t > 0.4 && s.bot > 0.13) { s.bot = 0; const x = SX + (Math.random() - 0.5) * 50, y = SY - 90 - Math.random() * 60; synth('down', x, y); synth('up', x, y); } },
+  draw(g, c) {
+    const s = g.s, t = g.t, gl = s.show, won = g.result === 'win', full = won ? 1 : gl;
+    c.drawImage(g.bake('family_laugh_bg', paintBg), 0, 0, W, H);
+    c.strokeStyle = 'rgba(70,60,90,0.6)'; c.lineWidth = 1.6; c.lineCap = 'round'; for (let i = 0; i < 3; i++) { const bx = (60 + i * 34 + t * 18) % 400 - 20, by = 200 + i * 14 + Math.sin(t * 2 + i) * 4, f = Math.sin(t * 9 + i) * 3; c.beginPath(); c.moveTo(bx - 7, by - f); c.quadraticCurveTo(bx - 3, by - 3, bx, by); c.quadraticCurveTo(bx + 3, by - 3, bx + 7, by - f); c.stroke(); }
+    // dappled light shifting under the oak
+    c.save(); c.globalCompositeOperation = 'screen'; for (let i = 0; i < 6; i++) { const x = 200 + i * 24 + Math.sin(t * 0.8 + i) * 6, y = 492 + (i % 3) * 7; c.fillStyle = 'rgba(255,244,190,0.22)'; c.beginPath(); c.ellipse(x, y, 9, 3, 0, 0, 7); c.fill(); } c.restore();
+    // Abraham stands by, serving
+    P.person(c, 200, 470, 0.85, { skin: P.SKIN[2], robe: P.CLOTH.terracotta, stripe: P.CLOTH.cream, sash: P.CLOTH.gold, beard: '#ece6de', hair: P.HAIR[5], hairStyle: 'short', expr: full > 0.6 ? 'laugh' : 'happy', arms: full > 0.8 ? 'cheer' : 'hold', t, facing: 1, bounce: 0.5 + full });
+    // the three visitors under the oak, softly glowing; they smile wider as Sarah laughs
+    const vis = [[232, 480, P.SKIN[3], P.CLOTH.white, P.CLOTH.sky, 1], [276, 476, P.SKIN[1], P.CLOTH.cream, P.CLOTH.gold, 1], [320, 480, P.SKIN[2], P.CLOTH.white, P.CLOTH.teal, -1]];
+    vis.forEach(([x, y, sk, rb, st, f], i) => {
+      c.save(); c.globalCompositeOperation = 'screen'; const hg = c.createRadialGradient(x, y - 50, 2, x, y - 46, 46); hg.addColorStop(0, `rgba(255,246,210,${0.35 + 0.15 * Math.sin(t * 2 + i)})`); hg.addColorStop(1, 'rgba(255,246,210,0)'); c.fillStyle = hg; c.fillRect(x - 50, y - 100, 100, 100); c.restore();
+      const ex = full > 0.75 ? 'laugh' : full > 0.25 ? 'happy' : (i === 1 ? 'happy' : 'happy');
+      seated(c, x, y, 0.9, { skin: sk, robe: rb, stripe: st, hair: P.HAIR[i], beard: i !== 1 ? true : false, hairStyle: i === 1 ? 'curly' : 'short', head: i === 2 ? 'wrap' : 'none', headCol: P.CLOTH.cream, expr: ex, arms: full > 0.5 && i === 0 ? 'wave' : full > 0.85 ? 'cheer' : 'hold', facing: f, t, phase: i, bounce: 0.4 + full * 1.5 });
+    });
+    c.drawImage(g.bake('family_laugh_spread', spread), 0, 0, W, H);
+    // Sarah: shakes with giggles, then bursts out laughing
+    const shake = gl * 3.5 * Math.sin(t * 40) + (won ? Math.sin(t * 30) * 3 : 0), hop = won ? Math.abs(Math.sin(t * 10)) * 8 : Math.abs(Math.sin(t * 14)) * gl * 3;
+    const hx = SX, hy = SY - 70 * SS - hop;
+    c.save(); c.globalCompositeOperation = 'screen'; const sg = c.createRadialGradient(hx, hy + 30, 10, hx, hy + 30, 110 + 50 * full); sg.addColorStop(0, `rgba(255,200,150,${0.12 + 0.35 * full})`); sg.addColorStop(1, 'rgba(255,200,150,0)'); c.fillStyle = sg; c.fillRect(hx - 170, hy - 140, 340, 340); c.restore();
+    c.save(); c.translate(SX + shake, SY - hop); c.rotate(won ? Math.sin(t * 9) * 0.06 : Math.sin(t * 22) * 0.025 * gl);
+    P.person(c, 0, 0, SS, { skin: P.SKIN[2], robe: P.CLOTH.plum, stripe: P.CLOTH.gold, hairStyle: 'bun', hair: P.HAIR[5], expr: full > 0.55 ? 'laugh' : full > 0.2 ? 'happy' : 'surprised', arms: won ? 'cheer' : gl > 0.35 ? 'hold' : 'pray', t, bounce: 0 });
+    // laugh crinkles at the eyes and smile lines: an older, very happy face
+    const fy = -56 * SS, r = 16 * SS; c.strokeStyle = 'rgba(120,60,50,0.45)'; c.lineWidth = 1.6; c.lineCap = 'round';
+    for (const sd of [-1, 1]) { const ex = sd * r * 0.37 + r * 0.08; for (let k = -1; k <= 1; k++) { c.beginPath(); c.moveTo(ex + sd * r * 0.22, fy + r * 0.12 + k * 3); c.lineTo(ex + sd * r * 0.36, fy + r * 0.12 + k * 5.5); c.stroke(); } }
+    c.beginPath(); c.moveTo(-r * 0.32, fy - r * 0.42); c.quadraticCurveTo(0, fy - r * 0.5, r * 0.36, fy - r * 0.42); c.stroke();
+    c.restore();
+    c.drawImage(g.bake('family_laugh_flaps', o => bigTent(o, 'flaps')), 0, 0, W, H);
+    // giggle lines bursting around her head: more and longer as she laughs harder
+    const nl = Math.round(3 + full * 9);
+    c.save(); c.strokeStyle = '#fff2c0'; c.lineCap = 'round';
+    for (let i = 0; i < nl; i++) { const a = -Math.PI + (i + 0.5) / nl * Math.PI, wob = Math.sin(t * 18 + i * 2) * 0.12, r0 = 58 + Math.sin(t * 12 + i) * 4, len = 10 + full * 22; c.lineWidth = 3 + full * 2; c.globalAlpha = 0.35 + 0.65 * Math.max(gl, full * 0.9);
+      c.beginPath(); c.moveTo(hx + shake + Math.cos(a + wob) * r0, hy + 4 + Math.sin(a + wob) * r0); c.lineTo(hx + shake + Math.cos(a + wob) * (r0 + len), hy + 4 + Math.sin(a + wob) * (r0 + len)); c.stroke(); }
+    c.restore();
+    // hearts float up
+    for (const h of s.hearts) { const q = (t - h.t) / 1.4; c.save(); c.globalAlpha = 1 - q * q; c.fillStyle = h.col; c.translate(h.x, h.y); c.rotate(Math.sin(t * 5 + h.r) * 0.3); heart(c, 0, 0, h.r * (q < 0.15 ? q / 0.15 : 1)); c.fillStyle = 'rgba(255,255,255,0.5)'; c.beginPath(); c.arc(-h.r * 0.45, -h.r * 0.35, h.r * 0.22, 0, 7); c.fill(); c.restore(); }
+    // a big heart blooms over everyone when she bursts out laughing
+    if (won) { const q = Math.min(1, (t - g.doneAt) * 2.5); c.save(); c.globalAlpha = 0.85 * q; c.fillStyle = '#ff8aa8'; heart(c, hx + 40, hy - 70 - q * 20, 10 + q * 22); c.restore(); for (let i = 0; i < 8; i++) { const a = t * 2 + i * 0.785, rr = 70 + q * 40; c.fillStyle = ['#ffd45a', '#fff', '#ff9ad8'][i % 3]; drawStar(c, hx + Math.cos(a) * rr, hy + Math.sin(a) * rr * 0.7, 5, a); } }
+    // the tickle feather wiggles where you tapped
+    if (s.feather && t - s.feather.t < 0.45) { const q = (t - s.feather.t) / 0.45; c.save(); c.globalAlpha = 1 - q * q; feather(c, s.feather.x + 6, s.feather.y + 4, -0.5 + Math.sin(t * 40) * 0.5); c.restore(); }
+    // an inviting sparkle on Sarah before the first tap
+    if (gl < 0.02 && !g.done) { const p = 0.5 + 0.5 * Math.sin(t * 6); c.save(); c.globalAlpha = 0.5 + 0.5 * p; c.fillStyle = '#fff6c8'; drawStar(c, hx + 44, hy - 30, 6 + p * 4, t); drawStar(c, hx - 46, hy + 20, 4 + p * 3, -t); c.restore(); }
+    for (const m of s.misses) { const q = (t - m.t) / 0.35; if (q < 0 || q > 1) continue; c.strokeStyle = `rgba(255,255,255,${0.6 * (1 - q)})`; c.lineWidth = 2; c.beginPath(); c.arc(m.x, m.y, 6 + q * 14, 0, 7); c.stroke(); }
+    P.vignette(c, W, H, 0.22, '#5a2a30'); P.grain(c, W, H, 0.05);
+  },
+});
+
+})();
+</script>
+<script>
 // ---- family_see.js ----
 (() => {
 // SEE! — Hagar and her son are out of water in the desert; tap the hidden well when it glints (Genesis 21:19).
@@ -3184,6 +3637,128 @@ function drawWell(c, x, y, s = 1) {
   const wg = c.createRadialGradient(0, -24, 2, 0, -24, 30); wg.addColorStop(0, '#d8ffff'); wg.addColorStop(1, '#3aa0c0'); c.fillStyle = wg; c.beginPath(); c.ellipse(0, -24, 30, 9, 0, 0, 7); c.fill();
   c.restore();
 }
+
+})();
+</script>
+<script>
+// ---- family_wrestle.js ----
+(() => {
+// WRESTLE! — Jacob wrestles all night by the Jabbok river until dawn, and will not let go until he is blessed (Genesis 32:22–31).
+// Mash to keep pushing. Keep the push up until the sun rises; if it falls flat, Jacob flops down for a nap.
+const GROUND = 566, HZ = 404;
+function paintScene(o, pal) {
+  P.sky(o, W, H, pal.sky, null);
+  if (pal.stars) P.stars(o, W, HZ - 40, 140, 17, 0);
+  // a glow low on the horizon where the sun will come up
+  const hg = o.createRadialGradient(250, HZ, 10, 250, HZ, 260); hg.addColorStop(0, P.rgba(pal.glow, pal.glowA)); hg.addColorStop(1, P.rgba(pal.glow, 0)); o.fillStyle = hg; o.fillRect(0, 0, W, H);
+  if (pal.clouds) { P.cloud(o, 70, 170, 0.62, pal.cloudL, pal.cloudD, 0.85); P.cloud(o, 300, 230, 0.45, pal.cloudL, pal.cloudD, 0.75); }
+  P.hills(o, W, HZ, 64, pal.far[0], pal.far[1], { seed: 61, freq: 0.007, dabs: 30, bottom: 470 });
+  P.hills(o, W, HZ + 26, 34, pal.mid[0], pal.mid[1], { seed: 63, freq: 0.011, dabs: 50, rim: pal.rim, bottom: 470 });
+  // Jacob's family camped across the river
+  for (const [x, y, s] of [[60, 434, 1], [96, 438, 0.8], [300, 432, 0.9]]) { o.fillStyle = pal.tent; o.beginPath(); o.moveTo(x - 18 * s, y); o.lineTo(x - 12 * s, y - 13 * s); o.lineTo(x + 10 * s, y - 15 * s); o.lineTo(x + 18 * s, y); o.closePath(); o.fill(); o.fillStyle = pal.tentLit; o.fillRect(x - 2 * s, y - 8 * s, 6 * s, 8 * s); }
+  // the river Jabbok
+  const rg = o.createLinearGradient(0, 446, 0, 500); rg.addColorStop(0, pal.water[0]); rg.addColorStop(1, pal.water[1]); o.fillStyle = rg;
+  o.beginPath(); o.moveTo(-10, 448); o.quadraticCurveTo(120, 440, 200, 450); o.quadraticCurveTo(290, 458, 370, 446); o.lineTo(370, 500); o.quadraticCurveTo(260, 510, 180, 498); o.quadraticCurveTo(80, 488, -10, 504); o.closePath(); o.fill();
+  o.strokeStyle = P.rgba(pal.shine, 0.35); o.lineWidth = 1.4; for (let k = 0; k < 5; k++) { o.beginPath(); for (let x = -10; x <= 370; x += 6) { const y = 456 + k * 9 + Math.sin(x * 0.05 + k * 2) * 1.6; x === -10 ? o.moveTo(x, y) : o.lineTo(x, y); } o.stroke(); }
+  // stepping stones of the ford
+  for (const [x, y] of [[120, 470], [150, 480], [182, 474], [212, 484]]) { o.fillStyle = pal.stone; o.beginPath(); o.ellipse(x, y, 11, 5, 0, 0, 7); o.fill(); o.fillStyle = P.rgba(pal.shine, 0.4); o.beginPath(); o.ellipse(x - 2, y - 2, 6, 2, 0, 0, 7); o.fill(); }
+  // near bank where they wrestle
+  o.beginPath(); o.moveTo(-10, 640); o.lineTo(-10, 500); o.quadraticCurveTo(90, 490, 180, 500); o.quadraticCurveTo(280, 510, 370, 494); o.lineTo(370, 640); o.closePath();
+  const bg = o.createLinearGradient(0, 494, 0, 640); bg.addColorStop(0, pal.bank[0]); bg.addColorStop(1, pal.bank[1]); o.fillStyle = bg; o.fill();
+  o.save(); o.clip(); const r = P.rng(77); for (let i = 0; i < 90; i++) { o.fillStyle = P.rgba(r() < 0.5 ? pal.bankDab : pal.bank[1], 0.15 + r() * 0.15); o.beginPath(); o.ellipse(r() * W, 500 + r() * 140, 6 + r() * 14, 2 + r() * 3, 0, 0, 7); o.fill(); } o.restore();
+  P.grassTufts(o, W, 500, 520, 26, pal.grass, 71); P.grassTufts(o, W, 580, 640, 30, pal.grass, 72);
+  // reeds and rocks framing the edges
+  P.rock(o, 28, 600, 1.2, pal.stone); P.rock(o, 340, 592, 0.9, pal.stone);
+  o.strokeStyle = pal.reed; o.lineWidth = 2.2; o.lineCap = 'round'; for (let i = 0; i < 9; i++) { const x = 300 + i * 7, h = 40 + (i % 3) * 16; o.beginPath(); o.moveTo(x, 510); o.quadraticCurveTo(x + 4, 510 - h * 0.6, x + 8 - (i % 2) * 10, 510 - h); o.stroke(); }
+  o.fillStyle = pal.reedTop; for (let i = 0; i < 9; i += 2) { const x = 300 + i * 7, h = 40 + (i % 3) * 16; o.beginPath(); o.ellipse(x + 8 - (i % 2) * 10, 510 - h, 2.5, 7, 0.2, 0, 7); o.fill(); }
+}
+const NIGHT = { sky: ['#070a24', '#111a48', '#24306a', '#3a3a78'], stars: true, glow: '#6a6ad0', glowA: 0.3, far: ['#26285a', '#1c1e46'], mid: ['#2e2c5a', '#22203e'], rim: '#6a70c0', tent: '#1a1834', tentLit: '#ffb060', water: ['#2a3a78', '#141c44'], shine: '#a8c0ff', stone: '#4a4a70', bank: ['#3a3858', '#22203a'], bankDab: '#5a5a88', grass: '#4a5a78', reed: '#2a3050', reedTop: '#3a3048' };
+const DAWN = { sky: ['#4a7ac0', '#b0a8d8', '#ffc8a8', '#ffb070'], stars: false, glow: '#ffd890', glowA: 0.8, clouds: false, cloudL: '#fff0e0', cloudD: '#f0a8a8', far: ['#9a88b8', '#7a6a9a'], mid: ['#b8a07a', '#8a7a5a'], rim: '#ffe0a0', tent: '#7a5a5a', tentLit: '#ffd090', water: ['#ffc898', '#6a8ab8'], shine: '#fff4d8', stone: '#a08a7a', bank: ['#b8a070', '#7a6a4a'], bankDab: '#e0c890', grass: '#8aa050', reed: '#6a7a3a', reedTop: '#8a5a3a' };
+function lightBeing(c, x, y, s, lean, t, o) {
+  c.save(); c.translate(x, y); c.rotate(lean);
+  c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(0, -60 * s, 4, 0, -50 * s, 80 * s); g.addColorStop(0, 'rgba(255,240,190,0.6)'); g.addColorStop(0.5, 'rgba(255,210,140,0.2)'); g.addColorStop(1, 'rgba(255,200,140,0)'); c.fillStyle = g; c.beginPath(); c.arc(0, -50 * s, 80 * s, 0, 7); c.fill(); c.restore();
+  c.globalAlpha = o.alpha ?? 1;
+  P.person(c, 0, 0, s, { skin: '#f6dcb8', robe: '#fff4dc', stripe: '#f2c24a', sash: '#ffd870', hair: '#e8b860', hairStyle: 'long', expr: o.expr, arms: o.arms, facing: -1, t, bounce: 0.6 });
+  c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.18 + 0.08 * Math.sin(t * 4); c.fillStyle = '#ffe8b0'; c.beginPath(); c.ellipse(0, -22 * s, 16 * s, 22 * s, 0, 0, 7); c.fill();
+  // a soft halo ring
+  c.globalAlpha = 0.5 + 0.2 * Math.sin(t * 3); c.strokeStyle = '#fff0b0'; c.lineWidth = 2.5; c.beginPath(); c.ellipse(0, -96 * s / 1.8 - 24, 20, 6, 0, 0, 7); c.stroke();
+  c.restore();
+  // motes of light drifting off
+  c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 10; i++) { const q = (t * 0.6 + i / 10) % 1; c.fillStyle = `rgba(255,240,190,${0.8 * (1 - q)})`; c.beginPath(); c.arc(x + Math.sin(t * 2 + i * 2.3) * 26 * s, y - 20 * s - q * 90 * s, 1.6 + (i % 3) * 0.6, 0, 7); c.fill(); } c.restore();
+}
+MG.add({
+  id: 'wrestle', stage: 'family', cmd: 'WRESTLE!', hint: 'mash', time: 5.5, mood: 'night', winText: 'Blessed!', failText: 'Zzz...',
+  card: { title: 'Wrestling until dawn', ref: 'Genesis 32', kind: 'Story', text: 'The night before Jacob met his brother Esau again, a mysterious stranger wrestled with him by the river until morning. Jacob held on and asked for a blessing, and God gave him a new name, Israel, and he walked away limping but blessed.', ask: 'When something feels hard, who helps you hold on and keep trying?' },
+  init(g) { const s = g.s; s.p = 0.55; s.dawn = 0; s.puffs = []; s.bot = 0; s.tapT = -1; s.endDawn = 0; },
+  down(g) { const s = g.s; s.p = Math.min(1, s.p + 0.085); s.tapT = g.t; s.puffs.push({ x: 180 + (Math.random() - 0.5) * 60, t: g.t, d: Math.random() < 0.5 ? -1 : 1 }); if (s.puffs.length > 20) s.puffs.shift(); g.sfx(Math.random() < 0.5 ? 'thud' : 'stomp'); },
+  update(g, dt) {
+    const s = g.s; if (g.done) { s.endDawn = Math.min(1, s.endDawn + dt * 2); return; }
+    s.p -= dt * [0.32, 0.42, 0.5][g.level] * Math.sqrt(g.speed);
+    s.dawn = Math.min(1, s.dawn + dt * (0.3 + 0.95 * Math.max(0, s.p)) / (0.78 * g.dur));
+    if (s.p <= 0) { s.p = 0; g.sfx('boing'); g.fail(); }
+    else if (s.dawn >= 1) { g.sfx('magic'); g.sfx('harp'); g.burst(150, 440, ['#fff6c0', '#ffd45a', '#ffffff'], 26, 220); g.win(); }
+  },
+  auto(g, dt, synth) { const s = g.s; s.bot += dt; if (g.t > 0.3 && s.bot > 0.075) { s.bot = 0; synth('down', 180, 420); synth('up', 180, 420); } },
+  draw(g, c) {
+    const s = g.s, t = g.t, won = g.result === 'win', lost = g.result === 'fail', q = won ? Math.min(1, (t - g.doneAt) / 0.75) : 0;
+    const dawn = Math.min(1, s.dawn + (won ? s.endDawn * 0.1 : 0)), d2 = dawn * dawn * (3 - 2 * dawn);
+    c.drawImage(g.bake('family_wrestle_night', o => paintScene(o, NIGHT)), 0, 0, W, H);
+    if (d2 > 0) { c.save(); c.globalAlpha = d2; c.drawImage(g.bake('family_wrestle_dawn', o => paintScene(o, DAWN)), 0, 0, W, H); c.restore(); }
+    // the sun rises behind the far hills as dawn comes
+    const sy = HZ + 40 - d2 * 120; c.save(); c.beginPath(); c.rect(0, 0, W, HZ - 30 + 64 * 0.2); c.clip();
+    const sg = c.createRadialGradient(250, sy, 0, 250, sy, 140); sg.addColorStop(0, `rgba(255,236,170,${0.75 * d2})`); sg.addColorStop(0.3, `rgba(255,190,120,${0.3 * d2})`); sg.addColorStop(1, 'rgba(255,170,120,0)'); c.fillStyle = sg; c.fillRect(0, 0, W, H);
+    c.fillStyle = `rgba(255,250,224,${d2})`; c.beginPath(); c.arc(250, sy, 24, 0, 7); c.fill(); c.restore();
+    if (d2 > 0.5) P.rays(c, 250, sy, W, H, '#fff0c0', 0.16 * (d2 - 0.5) * 2, 9, t);
+    if (d2 < 1) { c.save(); c.globalAlpha = 1 - d2; P.stars(c, W, HZ - 60, 30, 23, t); c.restore(); }
+    // river sparkles
+    for (let i = 0; i < 10; i++) { const k = Math.max(0, Math.sin(t * 3 + i * 1.9)); if (k < 0.6) continue; c.fillStyle = `rgba(255,248,220,${(k - 0.6) * 2})`; c.fillRect((i * 41 + t * 6) % W, 456 + (i * 13) % 36, 7, 1.3); }
+    // dust kicked up by each push
+    for (const pf of s.puffs) { const a = (t - pf.t) / 0.6; if (a < 0 || a > 1) continue; c.fillStyle = P.rgba(P.mix('#8a86b0', '#e8d0a0', d2), 0.6 * (1 - a)); for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(pf.x + pf.d * a * 30 + i * 6 * pf.d, GROUND - 4 - a * 14 - i * 3, 6 + a * 8, 0, 7); c.fill(); } }
+    // the clinch: Jacob (left) and the shining stranger (right) push shoulder to shoulder
+    const p = s.p, jolt = t - s.tapT < 0.1 ? (0.1 - (t - s.tapT)) * 30 : 0;
+    const cx = 168 + (p - 0.5) * 50 + jolt;
+    if (lost) {
+      const fq = Math.min(1, (t - g.doneAt) / 0.3);
+      c.save(); c.translate(cx - 50, GROUND + fq * 10); c.rotate(-fq * 0.25);
+      P.person(c, 0, 0, 1.8, { skin: P.SKIN[2], robe: P.CLOTH.indigo, stripe: P.CLOTH.saffron, sash: P.CLOTH.rust, hair: P.HAIR[1], beard: true, hairStyle: 'curly', expr: 'sleep', arms: 'down', t, bounce: 0 }); c.restore();
+      c.fillStyle = '#fff6dc'; c.font = '700 20px Fredoka, sans-serif'; c.save(); c.globalAlpha = 0.9; for (let i = 0; i < 3; i++) { const zq = (t * 0.8 + i / 3) % 1; c.globalAlpha = 1 - zq; c.fillText('z', cx - 30 + zq * 30, GROUND - 120 - zq * 40 - i * 4); } c.restore();
+      lightBeing(c, cx + 56, GROUND, 1.8, 0, t, { expr: 'happy', arms: 'reach' });
+    } else if (won) {
+      // the stranger rises into the sunrise; Jacob, blessed and glowing, limps off happy
+      lightBeing(c, cx + 40 + q * 10, GROUND - q * 120, 1.8 * (1 - q * 0.3), 0, t, { expr: 'laugh', arms: 'up', alpha: 1 - q * 0.8 });
+      const jx = cx - 30 + q * 60, limp = Math.abs(Math.sin(t * 9)) * 6, tilt = Math.sin(t * 9) > 0 ? 0.08 : -0.02;
+      c.save(); c.globalCompositeOperation = 'lighter'; const bg = c.createLinearGradient(jx, 0, jx, GROUND); bg.addColorStop(0, 'rgba(255,230,160,0)'); bg.addColorStop(1, `rgba(255,230,160,${0.45 * (1 - q * 0.5)})`); c.fillStyle = bg; c.fillRect(jx - 50, 0, 100, GROUND); c.restore();
+      c.save(); c.translate(jx, GROUND - limp); c.rotate(tilt);
+      P.person(c, 0, 0, 1.8, { skin: P.SKIN[2], robe: P.CLOTH.indigo, stripe: P.CLOTH.saffron, sash: P.CLOTH.rust, hair: P.HAIR[1], beard: true, hairStyle: 'curly', expr: 'laugh', arms: 'cheer', t, bounce: 0 }); c.restore();
+      c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 8; i++) { const a = t * 2.5 + i * 0.785; c.fillStyle = 'rgba(255,236,170,0.9)'; drawStar(c, jx + Math.cos(a) * 46, GROUND - 70 + Math.sin(a) * 50, 4 + (i % 2) * 2, a); } c.restore();
+    } else {
+      const strain = Math.sin(t * 30) * (1.2 + (1 - p) * 1.5), lean = 0.3 + (p - 0.5) * 0.14;
+      lightBeing(c, cx + 54, GROUND, 1.8, -0.3 + (p - 0.5) * 0.1, t, { expr: 'happy', arms: 'reach' });
+      c.save(); c.translate(cx - 54 + strain, GROUND); c.rotate(lean);
+      P.person(c, 0, 0, 1.8, { skin: P.SKIN[2], robe: P.CLOTH.indigo, stripe: P.CLOTH.saffron, sash: P.CLOTH.rust, hair: P.HAIR[1], beard: true, hairStyle: 'curly', expr: p > 0.45 ? 'happy' : 'surprised', arms: 'reach', t, bounce: 0 }); c.restore();
+      // where their hands meet, a little flare of light
+      c.save(); c.globalCompositeOperation = 'lighter'; const hx = cx + 2, hy = GROUND - 54, fr = 10 + 4 * Math.sin(t * 12); const fg = c.createRadialGradient(hx, hy, 0, hx, hy, fr * 2); fg.addColorStop(0, 'rgba(255,240,200,0.8)'); fg.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = fg; c.beginPath(); c.arc(hx, hy, fr * 2, 0, 7); c.fill(); c.restore();
+      // effort lines over the clinch
+      c.save(); c.strokeStyle = `rgba(255,246,220,${0.4 + 0.5 * p})`; c.lineWidth = 2.5; c.lineCap = 'round';
+      for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + (i - 1) * 0.5, r0 = 30 + Math.sin(t * 20 + i) * 3; c.beginPath(); c.moveTo(cx + Math.cos(a) * r0, GROUND - 136 + Math.sin(a) * r0); c.lineTo(cx + Math.cos(a) * (r0 + 12 * p + 4), GROUND - 136 + Math.sin(a) * (r0 + 12 * p + 4)); c.stroke(); } c.restore();
+    }
+    // the push meter: a glowing column with the sun at the top
+    if (!won) {
+      const mx = 26, my0 = 470, my1 = 150, mh = my0 - my1, fill = Math.max(0, p);
+      c.save(); c.fillStyle = 'rgba(20,14,40,0.4)'; roundRect(c, mx - 9, my1 - 4, 18, mh + 8, 9); c.fill();
+      const mg = c.createLinearGradient(0, my0, 0, my1); mg.addColorStop(0, '#7a6ad8'); mg.addColorStop(0.5, '#ff9a7a'); mg.addColorStop(1, '#ffe08a'); c.fillStyle = mg;
+      if (fill > 0) { roundRect(c, mx - 6, my0 - mh * fill, 12, mh * fill, 6); c.fill(); }
+      c.fillStyle = 'rgba(255,255,255,0.35)'; if (fill > 0) { roundRect(c, mx - 4, my0 - mh * fill + 3, 3, Math.max(0, mh * fill - 6), 2); c.fill(); }
+      const low = fill < 0.25 ? 0.5 + 0.5 * Math.sin(t * 14) : 0;
+      if (low) { c.strokeStyle = `rgba(255,170,200,${low})`; c.lineWidth = 2; roundRect(c, mx - 9, my1 - 4, 18, mh + 8, 9); c.stroke(); }
+      c.globalCompositeOperation = 'lighter'; const sgl = c.createRadialGradient(mx, my1 - 18, 2, mx, my1 - 18, 26); sgl.addColorStop(0, `rgba(255,220,140,${0.4 + 0.5 * d2})`); sgl.addColorStop(1, 'rgba(255,220,140,0)'); c.fillStyle = sgl; c.fillRect(mx - 30, my1 - 48, 60, 60);
+      c.globalCompositeOperation = 'source-over'; c.fillStyle = '#ffd45a'; c.strokeStyle = '#c8782a'; c.lineWidth = 1.5; c.beginPath(); c.arc(mx, my1 - 18, 9, 0, 7); c.fill(); c.stroke();
+      c.strokeStyle = '#ffd45a'; c.lineWidth = 2; for (let i = 0; i < 8; i++) { const a = i * 0.785 + t; c.beginPath(); c.moveTo(mx + Math.cos(a) * 12, my1 - 18 + Math.sin(a) * 12); c.lineTo(mx + Math.cos(a) * 16, my1 - 18 + Math.sin(a) * 16); c.stroke(); }
+      c.restore();
+    }
+    P.vignette(c, W, H, 0.3 + 0.15 * (1 - d2), '#1a1030'); P.grain(c, W, H, 0.06);
+  },
+});
 
 })();
 </script>

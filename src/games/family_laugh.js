@@ -113,7 +113,7 @@ MG.add({
     // dappled light shifting under the oak
     c.save(); c.globalCompositeOperation = 'screen'; for (let i = 0; i < 6; i++) { const x = 200 + i * 24 + Math.sin(t * 0.8 + i) * 6, y = 492 + (i % 3) * 7; c.fillStyle = 'rgba(255,244,190,0.22)'; c.beginPath(); c.ellipse(x, y, 9, 3, 0, 0, 7); c.fill(); } c.restore();
     // Abraham stands by, serving
-    P.person(c, 200, 470, 0.85, { skin: P.SKIN[2], robe: P.CLOTH.terracotta, stripe: P.CLOTH.cream, sash: P.CLOTH.gold, beard: '#ece6de', hair: P.HAIR[5], head: 'wrap', headCol: P.CLOTH.white, expr: full > 0.6 ? 'laugh' : 'happy', arms: full > 0.8 ? 'cheer' : 'hold', t, facing: 1, bounce: 0.5 + full });
+    P.person(c, 200, 470, 0.85, { skin: P.SKIN[2], robe: P.CLOTH.terracotta, stripe: P.CLOTH.cream, sash: P.CLOTH.gold, beard: '#ece6de', hair: P.HAIR[5], hairStyle: 'short', expr: full > 0.6 ? 'laugh' : 'happy', arms: full > 0.8 ? 'cheer' : 'hold', t, facing: 1, bounce: 0.5 + full });
     // the three visitors under the oak, softly glowing; they smile wider as Sarah laughs
     const vis = [[232, 480, P.SKIN[3], P.CLOTH.white, P.CLOTH.sky, 1], [276, 476, P.SKIN[1], P.CLOTH.cream, P.CLOTH.gold, 1], [320, 480, P.SKIN[2], P.CLOTH.white, P.CLOTH.teal, -1]];
     vis.forEach(([x, y, sk, rb, st, f], i) => {

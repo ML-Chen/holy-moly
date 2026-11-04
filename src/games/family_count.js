@@ -122,7 +122,7 @@ MG.add({
     const ax = 250 + (dance ? Math.sin(t * 8) * 6 : 0), ay = 588 - (dance ? Math.abs(Math.sin(t * 8)) * 9 : 0);
     c.save(); c.translate(ax, ay); if (dance) c.rotate(Math.sin(t * 8) * 0.1);
     const rg = c.createRadialGradient(0, -60, 4, 0, -60, 90); rg.addColorStop(0, `rgba(190,180,255,${0.12 + 0.2 * joy})`); rg.addColorStop(1, 'rgba(190,180,255,0)'); c.fillStyle = rg; c.fillRect(-90, -150, 180, 160);
-    P.person(c, 0, 0, 1.8, { skin: P.SKIN[2], robe: P.CLOTH.terracotta, stripe: P.CLOTH.cream, sash: P.CLOTH.gold, beard: '#ece6de', hair: P.HAIR[5], head: 'wrap', headCol: P.CLOTH.sand, expr: dance ? 'laugh' : wow ? 'wow' : 'happy', arms: dance ? 'cheer' : wow ? 'up' : 'reach', t, bounce: dance ? 0 : 0.8, facing: -1 });
+    P.person(c, 0, 0, 1.8, { skin: P.SKIN[2], robe: P.CLOTH.terracotta, stripe: P.CLOTH.cream, sash: P.CLOTH.gold, beard: '#ece6de', hair: P.HAIR[5], hairStyle: 'short', expr: dance ? 'laugh' : wow ? 'wow' : 'happy', arms: dance ? 'cheer' : wow ? 'up' : 'reach', t, bounce: dance ? 0 : 0.8, facing: -1 });
     c.restore();
     if (dance) { c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 6; i++) { const a = t * 3 + i * 1.05, q = (t * 1.2 + i / 6) % 1; c.fillStyle = `rgba(255,236,170,${0.9 * (1 - q)})`; drawStar(c, ax + Math.cos(a) * (40 + q * 30), ay - 80 + Math.sin(a) * 30 - q * 30, 4 * (1 - q) + 1.5, a); } c.restore(); }
     P.vignette(c, W, H, 0.32); P.grain(c, W, H, 0.06);
