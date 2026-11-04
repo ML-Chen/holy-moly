@@ -1,6 +1,8 @@
 // engine.js — the Holy Moly! microgame engine: screens, input, the microgame loop, lives (loaves), grace, cards and saving.
 // Microgames register themselves with MG.add({...}); see docs/MICROGAMES.md for the full contract.
 const W = 360, H = 640;
+// a jingle's length, kept finite and short so a strange audio value can never stall the run
+function waitOf(w) { return Number.isFinite(w) && w > 0 ? Math.min(w, 4) : 1; }
 const A = { // safe audio wrapper: the game works silently if audio.js is missing or fails
   call(fn, ...a) { try { if (typeof AUD !== 'undefined' && AUD[fn]) return AUD[fn](...a); } catch (e) { console.warn('audio', fn, e); } return 0; },
   sfx(n, o) { return A.call('sfx', n, o); }, jingle(n, s) { return A.call('jingle', n, s) || ({ ready: 1.6, win: 1.1, fail: 1.1, speedup: 1.8, grace: 2.2, gameover: 2.5, stagestart: 2, cleared: 2.5 }[n] || 1) / (s || 1); },
@@ -87,13 +89,14 @@ function resize() {
 window.addEventListener('resize', resize); resize();
 const ptr = { x: 0, y: 0, down: false, sx: 0, sy: 0, st: 0, path: [] };
 function toLogical(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left - offX) / scale, (e.clientY - r.top - offY) / scale]; }
-cv.addEventListener('pointerdown', e => { e.preventDefault(); A.call('unlock'); const [x, y] = toLogical(e); ptr.x = x; ptr.y = y; ptr.down = true; ptr.sx = x; ptr.sy = y; ptr.st = performance.now(); ptr.path = [[x, y, ptr.st]]; input('down', x, y); try { cv.setPointerCapture(e.pointerId); } catch (_) { } });
+cv.addEventListener('pointerdown', e => { e.preventDefault(); A.call('unlock'); const [x, y] = toLogical(e); if (!CV.list && tryPause(x, y)) return; ptr.x = x; ptr.y = y; ptr.down = true; ptr.sx = x; ptr.sy = y; ptr.st = performance.now(); ptr.path = [[x, y, ptr.st]]; input('down', x, y); try { cv.setPointerCapture(e.pointerId); } catch (_) { } });
 cv.addEventListener('pointermove', e => { const [x, y] = toLogical(e); ptr.x = x; ptr.y = y; if (ptr.down) { ptr.path.push([x, y, performance.now()]); if (ptr.path.length > 12) ptr.path.shift(); input('move', x, y); } });
 const endPtr = e => { if (!ptr.down) return; const [x, y] = toLogical(e); ptr.down = false; input('up', x, y); const dt = performance.now() - ptr.st, dx = x - ptr.sx, dy = y - ptr.sy; if (Math.hypot(dx, dy) > 28 && dt < 650) input('swipe', dx, dy, dx / Math.max(dt, 1) * 1000, dy / Math.max(dt, 1) * 1000); };
 cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
 // iPhones and iPads only allow audio to start on a touch-up or tap, not on touch-down
 for (const ev of ['touchend', 'click', 'pointerup', 'keydown']) window.addEventListener(ev, () => A.call('unlock'), { passive: true });
-document.addEventListener('visibilitychange', () => { if (document.hidden) A.call('pause'); else A.call('resume'); });
+window.addEventListener('keydown', e => { if (e.key !== 'Escape' && e.key !== 'p' && e.key !== 'P') return; if (run && run.paused) resumeRun(); else if (scene === 'run' && run && run.phase !== 'over' && !CV.list) pauseRun(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { A.call('pause'); if (scene === 'run' && run && run.phase !== 'over' && !CV.list) pauseRun(); } else if (!(run && run.paused)) A.call('resume'); });
 
 // ---------------- shared effects (particles, floating text, shake) ----------------
 const FX = {
@@ -166,15 +169,17 @@ function playlist(stageId) {
 function startRun(stageId) {
   const st = STAGE[stageId] || { id: 'remix', name: 'Remix', mood: 'party', sky: ['#ff9ac0', '#ffc890', '#fff2d0'], ground: ['#b8d870', '#80a848'], host: STAGES[11].host, hostName: 'everyone', line: 'Every story, all mixed up!' };
   run = { stage: st, list: playlist(st.id), i: 0, loaves: 4, graceUsed: false, speed: 1, cleared: 0, phase: 'intro', pt: 0, wait: 0, g: null, newCards: [], lostLoafAt: -1, bpm: 108 };
-  scene = 'run'; A.music(null); run.wait = A.jingle('stagestart', 1); A.babble(st.line, 'woman');
+  scene = 'run'; A.music(null); run.wait = waitOf(A.jingle('stagestart', 1)); A.babble(st.line, 'woman');
 }
 function nextMicro() {
+  if (run.stage.id !== 'remix' && run.i >= RUN_LEN) return finishRun(true);
+  if (!run.list[run.i]) run.list.push(...playlist(run.stage.id)); // remix ran past its list
   const def = run.list[run.i]; const level = Math.min(2, Math.floor(run.i / Math.max(1, (run.stage.id === 'remix' ? 8 : MG.forStage(run.stage.id).length))));
   run.g = makeG(def, level, run.speed); FX.clear();
   try { def.init && def.init(run.g); } catch (e) { console.error(def.id, 'init', e); run.g.win(); }
   run.phase = 'play'; run.pt = 0; A.beat(true, { bpm: run.bpm, mood: def.mood || run.stage.mood });
 }
-function between() { run.phase = 'between'; run.pt = 0; A.beat(false); run.wait = A.jingle('ready', run.speed); }
+function between() { run.phase = 'between'; run.pt = 0; A.beat(false); run.wait = waitOf(A.jingle('ready', run.speed)); }
 function endMicro() {
   const g = run.g; A.beat(false); run.phase = 'result'; run.pt = 0;
   if (g.result === 'win') { run.cleared++; A.jingle('win', run.speed); const id = g.def.id; if (!SAVE.d.cards[id]) { SAVE.d.cards[id] = 1; run.newCards.push(id); SAVE.save(); } }
@@ -182,10 +187,14 @@ function endMicro() {
   run.i++;
 }
 function afterResult() {
-  if (run.loaves <= 0 && !run.graceUsed) { run.graceUsed = true; run.phase = 'grace'; run.pt = 0; run.wait = A.jingle('grace', 1); return; }
+  if (run.loaves <= 0 && !run.graceUsed) { run.graceUsed = true; run.phase = 'grace'; run.pt = 0; run.wait = waitOf(A.jingle('grace', 1)); return; }
   if (run.loaves <= 0) return finishRun(false);
+  continueRun();
+}
+// after a result (or after grace gives a loaf back): end the stage after game 12, speed up every 4 games, else show the next number
+function continueRun() {
   if (run.stage.id !== 'remix' && run.i >= RUN_LEN) return finishRun(true);
-  if (run.i % SPEED_EVERY === 0) { run.speed = +(run.speed + 0.25).toFixed(2); run.bpm = Math.round(108 * (1 + (run.speed - 1) * 0.7)); run.phase = 'speedup'; run.pt = 0; run.wait = A.jingle('speedup', run.speed); return; }
+  if (run.i % SPEED_EVERY === 0) { run.speed = +(run.speed + 0.25).toFixed(2); run.bpm = Math.round(108 * (1 + (run.speed - 1) * 0.7)); run.phase = 'speedup'; run.pt = 0; run.wait = waitOf(A.jingle('speedup', run.speed)); return; }
   between();
 }
 function finishRun(cleared) {
@@ -208,7 +217,11 @@ function updateRun(dt) {
   }
   else if (run.phase === 'result' && run.pt > 0.9 / Math.sqrt(run.speed)) afterResult();
   else if (run.phase === 'speedup' && run.pt > Math.max(1.6, run.wait)) between();
-  else if (run.phase === 'grace' && run.pt > 3.6) { run.loaves = 1; between(); }
+  else if (run.phase === 'grace' && run.pt > 3.6) { run.loaves = 1; continueRun(); }
+  // watchdog: no screen between games may last more than 8 seconds, and no game may run 3 seconds past its fuse
+  else if (run.phase === 'play' && !run.g.done && run.g.t > run.g.dur + 3) { console.error(run.g.def.id, 'watchdog'); run.g.fail(); }
+  else if (run.phase === 'play' && run.g.done && run.g.t - run.g.doneAt > 3) endMicro();
+  else if (run.phase !== 'over' && run.phase !== 'play' && run.pt > 8) { console.error('watchdog', run.phase); if (run.phase === 'between') nextMicro(); else if (run.phase === 'result') afterResult(); else if (run.phase === 'grace') { run.loaves = 1; continueRun(); } else between(); }
 }
 // synthetic input for automated tests: synth('down', x, y) etc.
 function synth(type, ...a) { if (type === 'down') { ptr.down = true; ptr.x = a[0]; ptr.y = a[1]; ptr.sx = a[0]; ptr.sy = a[1]; } if (type === 'move') { ptr.x = a[0]; ptr.y = a[1]; } if (type === 'up') ptr.down = false; input(type, ...a); }
@@ -216,9 +229,9 @@ function synth(type, ...a) { if (type === 'down') { ptr.down = true; ptr.x = a[0
 function input(type, x, y, vx, vy) {
   if (CV.list) { cardInput(type, x, y); return; }
   if (scene === 'run' && run) {
+    if (run.paused) { pauseInput(type, x, y); return; }
     if (run.phase === 'play') { const g = run.g, d = g.def; if (g.done) return; try { if (d[type]) d[type](g, x, y, vx, vy); } catch (e) { console.error(d.id, type, e); } return; }
     if (run.phase === 'over' && type === 'down') { if (hit(x, y, 180, 548, 220, 56)) { press('again'); A.sfx('pop'); setTimeout(() => startRun(run.stage.id), 140); } else if (hit(x, y, 180, 612, 160, 40)) { press('home'); A.sfx('click'); setTimeout(() => goStages(), 120); } }
-    if (type === 'down' && hit(x, y, 336, 24, 44, 44) && run.phase !== 'over') { goStages(); A.sfx('click'); }
     return;
   }
   // Cards grid: open a card on a tap (finger up without much movement), so a drag that starts on a card scrolls the grid
@@ -239,6 +252,23 @@ function input(type, x, y, vx, vy) {
 }
 function hit(x, y, cx, cy, w, h) { return Math.abs(x - cx) <= w / 2 && Math.abs(y - cy) <= h / 2; }
 function press(id) { ui.pressed = id; setTimeout(() => { if (ui.pressed === id) ui.pressed = null; }, 160); }
+// ---------------- pause ----------------
+const PAUSE_BTN = { x: 336, y: 24, r: 26 }, PAUSE_MENU = { resume: [180, 330, 210, 60], stories: [180, 408, 170, 46] };
+function tryPause(x, y) { if (scene !== 'run' || !run || run.paused || run.phase === 'over') return false; if (Math.hypot(x - PAUSE_BTN.x, y - PAUSE_BTN.y) > PAUSE_BTN.r) return false; pauseRun(); return true; }
+function pauseRun() { if (!run || run.paused) return; run.paused = true; run.pausedAt = T; ptr.down = false; A.sfx('click'); A.beat(false); setTimeout(() => { if (run && run.paused) A.call('pause'); }, 120); }
+function resumeRun() { if (!run || !run.paused) return; run.paused = false; A.call('resume'); A.sfx('pop'); if (run.phase === 'play') A.beat(true, { bpm: run.bpm, mood: run.g.def.mood || run.stage.mood }); }
+function pauseInput(type, x, y) {
+  if (type !== 'down') return;
+  if (hit(x, y, ...PAUSE_MENU.resume)) { press('resume'); setTimeout(resumeRun, 120); }
+  else if (hit(x, y, ...PAUSE_MENU.stories)) { press('quit'); A.call('resume'); A.sfx('click'); setTimeout(goStages, 120); }
+}
+function pauseIcon(c, x, y) { c.save(); c.translate(x, y); c.fillStyle = 'rgba(40,20,50,0.38)'; c.beginPath(); c.arc(0, 0, 18, 0, 7); c.fill(); c.fillStyle = '#fff6ea'; roundRect(c, -7, -8, 5, 16, 2); c.fill(); roundRect(c, 2, -8, 5, 16, 2); c.fill(); c.restore(); }
+function drawPause(c, t) {
+  c.fillStyle = 'rgba(40,20,48,0.7)'; c.fillRect(0, 0, W, H);
+  P.command(c, 'Paused', 180, 200, 52, 1 + Math.sin(t * 2) * 0.02, { tilt: 0 });
+  button(c, ...PAUSE_MENU.resume.slice(0, 2), 210, 60, 'Keep playing', { size: 24, pressed: ui.pressed === 'resume' });
+  button(c, ...PAUSE_MENU.stories.slice(0, 2), 170, 46, 'Stories', { size: 19, top: '#fff6ea', bot: '#e8d2b0', edge: '#7a4a3a', pressed: ui.pressed === 'quit' });
+}
 function goStages() { scene = 'stages'; run = null; A.beat(false); A.music('title'); FX.clear(); }
 function toggleMute() { SAVE.d.muted = !SAVE.d.muted; SAVE.save(); A.call('mute', SAVE.d.muted); }
 
@@ -412,8 +442,9 @@ function drawRun(c, t) {
     if (FX.shakeT > 0) c.translate((Math.random() - 0.5) * FX.shakeA, (Math.random() - 0.5) * FX.shakeA);
     try { g.def.draw(g, c); } catch (e) { console.error(g.def.id, 'draw', e); c.fillStyle = '#ccc'; c.fillRect(0, 0, W, H); }
     FX.draw(c); c.restore();
-    if (r.phase === 'play') drawPlayOverlay(c, g, t);
+    if (r.phase === 'play' && !r.paused) drawPlayOverlay(c, g, t);
     if (r.phase === 'result') { const k = Math.min(1, r.pt * 5); c.fillStyle = g.result === 'win' ? `rgba(255,236,170,${0.25 * k})` : `rgba(60,30,80,${0.3 * k})`; c.fillRect(0, 0, W, H); }
+    if (r.paused) drawPause(c, t); else pauseIcon(c, PAUSE_BTN.x, PAUSE_BTN.y);
     return;
   }
   stagePage(c, st, t);
@@ -443,7 +474,7 @@ function drawRun(c, t) {
     if (r.phase === 'between' && r.i === 0) P.command(c, 'Get ready!', 180, 120, 44, 0.6 + 0.4 * easeOut(k));
     if (r.phase === 'grace') drawGrace(c, r.pt);
   }
-  backIcon(c, 336, 24);
+  if (r.paused) drawPause(c, t); else pauseIcon(c, PAUSE_BTN.x, PAUSE_BTN.y);
 }
 function drawGrace(c, pt) {
   const p = Math.min(1, pt / 1.6), x = -40 + p * 106, y = 120 + Math.sin(p * Math.PI) * -40 + p * 60;
@@ -480,9 +511,14 @@ function drawPlayOverlay(c, g, t) {
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(1 / 30, (now - last) / 1000); last = now; T += dt;
-  step(dt); render(); requestAnimationFrame(frame);
+  requestAnimationFrame(frame); // asked first, so an error below can never stop the game loop
+  try { step(dt); } catch (e) { console.error('step', e); recover(); }
+  try { render(); } catch (e) { console.error('render', e); }
 }
-function step(dt) { if (scene === 'run' && run) updateRun(dt); FX.update(dt); }
+function step(dt) { if (scene === 'run' && run && !run.paused) updateRun(dt); FX.update(dt); }
+// if the run itself throws, move on instead of freezing: end a broken game as a win, or go back to the story list
+let recoverN = 0;
+function recover() { if (scene !== 'run' || !run) return; if (++recoverN > 30) { recoverN = 0; goStages(); return; } if (run.phase === 'play' && run.g) { run.g.done = true; run.g.result = 'win'; run.g.doneAt = run.g.t; } else if (run.phase !== 'over') { run.phase = 'result'; run.pt = 0; } }
 // On phones taller or wider than 9:16, the bands around the game continue the scene: its edge rows are stretched outward and softly darkened.
 function render() {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#2a1830'; ctx.fillRect(0, 0, cv.width, cv.height);
@@ -543,7 +579,8 @@ window.HM = {
   list() { return MG.list.map(d => ({ id: d.id, stage: d.stage, cmd: d.cmd, hint: d.hint, time: d.time, winOnTimeout: !!d.winOnTimeout, hasAuto: !!d.auto, card: !!(d.card && d.card.text) })); },
   goto(s, arg) { if (s === 'run') startRun(arg); else { scene = s; } },
   step(n = 1, dt = 1 / 60) { for (let i = 0; i < n; i++) { T += dt; step(dt); } render(); },
-  state() { return { scene, phase: run && run.phase, i: run && run.i, loaves: run && run.loaves, speed: run && run.speed, graceUsed: run && run.graceUsed, won: run && run.won, cleared: run && run.cleared, cardViewerOpen: !!CV.list }; },
+  state() { return { scene, phase: run && run.phase, i: run && run.i, loaves: run && run.loaves, speed: run && run.speed, graceUsed: run && run.graceUsed, won: run && run.won, cleared: run && run.cleared, paused: !!(run && run.paused), cardViewerOpen: !!CV.list }; },
+  pause() { pauseRun(); }, resume() { resumeRun(); },
   resetSave() { try { localStorage.removeItem(SAVE.key); } catch (e) { } SAVE.d = SAVE.merge({}, {}); },
   ready: false,
   synth,

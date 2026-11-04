@@ -55,6 +55,7 @@ const CAMS = [[1.0, 1.08, 0, 0, 0, -0.01], [1.1, 1.02, -0.02, 0.01, 0, 0], [1.03
   await p.evaluate(() => {
     const cvs = document.getElementById('game'); cvs.style.transformOrigin = '50% 50%';
     backIcon = () => {};   // no back button in the video
+    pauseIcon = () => {};  // nor a pause button
     hintIcon = () => {};   // the game's "which input" hint looks like a cursor in a video, so it is hidden; a finger shows the bot's real touches instead
     // the finger: record every touch the test bot makes, and draw a fingertip that glides to it
     const F = window.PRF = {x: 180, y: 420, tx: 180, ty: 420, down: false, last: -9, ripples: [], streak: null};

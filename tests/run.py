@@ -284,7 +284,7 @@ def lose_path_and_grace(env):
             if e['phase'] == 'grace':
                 grace += 1
                 if expect != 0: fails.append(f'{tag} grace came with {expect} loaves left')
-            if e['phase'] == 'between' and prev == 'grace':
+            if e['phase'] in ('between', 'speedup') and prev == 'grace':  # grace goes on through the usual checks, so a speed-up may come next
                 expect = 1
                 if e['loaves'] != 1: fails.append(f'{tag} grace restored {e["loaves"]} loaves, expected 1')
             prev = e['phase']
@@ -307,6 +307,109 @@ def lose_path_and_grace(env):
     drive(pg, 'over'); pg.evaluate('HM.step(30)')
     pg.evaluate("HM.synth('down', 180, 612); HM.synth('up', 180, 612)"); pg.wait_for_timeout(400)
     if pg.evaluate('scene') != 'stages': fails.append('"Stories" did not go back to the stage picker')
+    for e in errs: fails.append(e)
+    pg.close()
+    return fails
+
+
+# ---------------------------------------------------------------- 4b. grace on the very last game still ends the stage after 12
+@test()
+def grace_on_last_game(env):
+    """Losing the last loaf on game 12 brings the dove, then the stage must end. Before the fix the run went on to a
+    13th game, and in stages whose playlist holds exactly 12 games (6 microgames, such as A Baby Is Born) that read past
+    the end of the list, threw, and froze the phone with the between screen showing 13."""
+    fails = []
+    pg, errs = env.open('plain')
+    stages = pg.evaluate("STAGES.filter(s => MG.forStage(s.id).length).map(s => s.id)")
+    for stage in (['baby', 'ark'] if env.quick else stages):
+        r = pg.evaluate("""s => { localStorage.clear(); SAVE.d = SAVE.merge(null, null); __hm.seed(5); CV.list = null; HM.goto('run', s);
+          let n = 0, forced = false, sawGrace = false;
+          try {
+            while (run && run.phase !== 'over' && n++ < 60 * 400) {
+              if (run.phase === 'play' && run.i === 11 && !forced) { forced = true; run.loaves = 1; run.graceUsed = false; }
+              window.HM_AUTO = !(run.phase === 'play' && run.i === 11);
+              if (run.phase === 'grace') sawGrace = true;
+              HM.step(1, 1 / 30);
+            }
+          } catch (e) { return { error: String(e && e.stack || e), i: run && run.i, phase: run && run.phase }; }
+          window.HM_AUTO = false;
+          return { phase: run.phase, i: run.i, won: run.won, sawGrace, listLen: run.list.length, loaves: run.loaves }; }""", stage)
+        tag = f'[{stage}]'
+        if r.get('error'): fails.append(f'{tag} the game threw at game {r["i"]} ({r["phase"]}): {r["error"][:300]}'); continue
+        if not r['sawGrace']: fails.append(f'{tag} losing the last loaf on game 12 did not bring grace: {r}')
+        if r['phase'] != 'over': fails.append(f'{tag} the run never ended after grace on game 12: {r}')
+        if r['i'] != 12: fails.append(f'{tag} played {r["i"]} games, expected 12 (grace must not add a 13th)')
+        if not r['won']: fails.append(f'{tag} winning 11 games and getting grace on the 12th should clear the stage: {r}')
+        pg.evaluate("CV.list = null; HM.goto('title'); run = null")
+    for e in errs: fails.append(e)
+    pg.close()
+    return fails
+
+
+# ---------------------------------------------------------------- 4c. the game loop survives a broken microgame
+@test()
+def loop_survives_errors(env):
+    """Run the real requestAnimationFrame loop (no test mode) and break the next game's init and draw on purpose:
+    the loop must keep going and the run must move on instead of freezing."""
+    fails = []
+    pg, errs = env.open('plain', test=False)
+    pg.evaluate("""() => { HM.goto('run', 'baby'); const d = run.list[0];
+      window.__oldInit = d.init; window.__oldDraw = d.draw; d.init = () => { throw new Error('test: broken init'); }; d.draw = () => { throw new Error('test: broken draw'); };
+      makeG = (orig => (...a) => { const g = orig(...a); if (window.__breakMake) throw new Error('test: broken makeG'); return g; })(makeG); }""")
+    pg.wait_for_timeout(6500)
+    st = pg.evaluate('HM.state()')
+    if st['scene'] != 'run' or st['i'] is None or st['i'] < 1: fails.append(f'the run did not move past a microgame whose init and draw throw: {st}')
+    pg.evaluate("() => { const d = run.list[0]; d.init = window.__oldInit; d.draw = window.__oldDraw; window.__breakMake = true; }")
+    t0 = pg.evaluate('T'); pg.wait_for_timeout(1500); t1 = pg.evaluate('T')
+    if not t1 > t0 + 0.5: fails.append(f'the game loop stopped after errors (T went {t0} -> {t1})')
+    pg.evaluate('window.__breakMake = false')
+    pg.close()
+    return fails  # this test throws on purpose, so its console errors are expected and not reported
+
+
+# ---------------------------------------------------------------- 4d. pause button
+@test()
+def pause_button(env):
+    fails = []
+    pg, errs = env.open('plain')
+    pg.evaluate("() => { localStorage.clear(); SAVE.d = SAVE.merge(null, null); __hm.seed(4); window.HM_AUTO = false; HM.goto('run', 'ark'); }")
+    drive(pg, 'play'); pg.evaluate('HM.step(20)')
+    tx = [t['text'] for t in texts(pg)]
+    pg.mouse.click(336, 24); pg.evaluate('HM.step(1)')
+    st = pg.evaluate('HM.state()')
+    if not st['paused']: fails.append(f'a real tap on the pause button did not pause the game: {st}')
+    gt = pg.evaluate('run.g.t'); pg.evaluate('HM.step(600)')
+    if pg.evaluate('run.g.t') != gt: fails.append('the microgame timer kept running while paused')
+    if pg.evaluate("run.phase") != 'play': fails.append('the run left the microgame while paused')
+    tx = [t['text'] for t in texts(pg)]
+    for want in ('Paused', 'Keep playing', 'Stories'):
+        if want not in tx: fails.append(f'the pause screen does not show "{want}" (it shows {tx[:8]})')
+    if env.out: pg.screenshot(path=str(pathlib.Path(env.out) / 'pause.png'))
+    pg.mouse.click(180, 520); pg.evaluate('HM.step(1)')
+    if not pg.evaluate('HM.state().paused'): fails.append('a tap outside the pause buttons resumed the game')
+    pg.mouse.click(180, 330); pg.wait_for_timeout(300); pg.evaluate('HM.step(1)')
+    if pg.evaluate('HM.state().paused'): fails.append('"Keep playing" did not resume the game')
+    pg.evaluate('HM.step(10)')
+    if not pg.evaluate('run.g.t') > gt: fails.append('the microgame timer did not continue after resuming')
+    # pause on a between screen, then quit to the stories
+    drive(pg, 'between'); pg.mouse.click(336, 24); pg.evaluate('HM.step(1)')
+    pt = pg.evaluate('run.pt'); pg.evaluate('HM.step(600)')
+    if pg.evaluate("run.phase") != 'between' or pg.evaluate('run.pt') != pt: fails.append('the between screen moved on while paused')
+    pg.mouse.click(180, 408); pg.wait_for_timeout(300)
+    if pg.evaluate('scene') != 'stages': fails.append('"Stories" on the pause screen did not go back to the stage picker')
+    # switching apps pauses the game
+    pg.evaluate("() => { HM.goto('run', 'ark'); }"); drive(pg, 'play')
+    pg.evaluate("() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange'));"
+                " Object.defineProperty(document, 'hidden', { configurable: true, get: () => false }); document.dispatchEvent(new Event('visibilitychange')); }")
+    if not pg.evaluate('HM.state().paused'): fails.append('hiding the page during a microgame did not pause it')
+    pg.keyboard.press('Escape')
+    if pg.evaluate('HM.state().paused'): fails.append('Escape did not resume the game')
+    pg.keyboard.press('p')
+    if not pg.evaluate('HM.state().paused'): fails.append('P did not pause the game')
+    # the results screen has no pause button
+    pg.evaluate("HM.resume(); window.HM_AUTO = true"); drive(pg, 'over'); pg.evaluate('window.HM_AUTO = false; HM.step(30)')
+    pg.mouse.click(336, 24); pg.evaluate('HM.step(1)')
+    if pg.evaluate('HM.state().paused'): fails.append('the results screen could be paused')
     for e in errs: fails.append(e)
     pg.close()
     return fails
