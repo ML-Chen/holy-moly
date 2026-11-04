@@ -132,7 +132,7 @@ MG.add({
     ];
     const items = members.map((m, i) => {
       let p = Math.max(0, s.p - m.off * (1 - arr)), [x, y] = bez(p);
-      if (arr > 0) { const tx = sx - 120 + i * 16, ty = sy + 10 + (i % 2) * 14; x += (tx - x) * arr; y += (ty - y) * arr; }
+      if (arr > 0) { const tx = sx - 156 + i * 17, ty = sy + 6 + (i % 2) * 14; x += (tx - x) * arr; y += (ty - y) * arr; }
       const sc = 0.8 + 0.45 * p, dx = bez(Math.min(1, p + 0.01))[0] - x;
       return { m, i, x: x + (m.side || 0) * sc * (1 - arr), y, sc, f: arr > 0 ? 1 : dx >= 0 ? 1 : -1 };
     }).sort((a, b) => a.y - b.y);

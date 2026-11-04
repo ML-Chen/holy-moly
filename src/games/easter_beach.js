@@ -9,9 +9,10 @@ const FRIENDS = [
   { skin: SK[3], robe: CL.terracotta, stripe: CL.sand, beard: true, hair: HR[3] },
   { skin: SK[0], robe: CL.olive, stripe: CL.cream, beard: true, hair: HR[1], hairStyle: 'curly' },
 ];
-const NET = { x: 74, y: 520 }, FIRE = { x: 176, y: 474 };
+const NET = { x: 80, y: 520 }, FIRE = { x: 186, y: 500 }, NK = 1.35, FK = 1.3;
 const SLOTS = [[-26, -6], [0, -10], [26, -6]];          // places for fish on the grill stone, relative to the fire
-const SPOTS = [[292, 488], [296, 584], [198, 590], [104, 612]];
+const SPOTS = [[300, 516], [292, 612], [196, 616], [92, 616]];
+const slot = i => [FIRE.x + SLOTS[i][0] * FK, FIRE.y + SLOTS[i][1] * FK];
 const RAW = '#9fc3d6', DONE = '#c8843a';
 
 function glow(c, x, y, r, col, a) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, P.rgba(col, a)); g.addColorStop(1, P.rgba(col, 0)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
@@ -59,7 +60,7 @@ function paintShore(o) {
   for (let i = 0; i < 26; i++) { const x = r() * W, y = 400 + r() * 230; o.fillStyle = ['#b8a090', '#9a8a80', '#d8c8b8', '#c8a088'][i % 4]; o.beginPath(); o.ellipse(x, y, 2 + r() * 3, 1.5 + r() * 2, r() * 3, 0, 7); o.fill(); }
   for (let i = 0; i < 6; i++) { const x = r() * W, y = 420 + r() * 200; o.fillStyle = '#fff0e8'; o.beginPath(); o.ellipse(x, y, 4, 3, 0, Math.PI, 0); o.fill(); o.strokeStyle = 'rgba(180,120,100,0.6)'; o.lineWidth = 0.8; for (let k = -1; k <= 1; k++) { o.beginPath(); o.moveTo(x, y); o.lineTo(x + k * 3, y - 3); o.stroke(); } }
   // Peter's wet footprints from the water up to his place
-  o.fillStyle = 'rgba(120,90,70,0.35)'; for (let i = 0; i < 7; i++) { const u = i / 7, x = 236 + u * 50 + (i % 2) * 7, y = 398 + u * 76; o.beginPath(); o.ellipse(x, y, 3, 5, 0.3, 0, 7); o.fill(); }
+  o.fillStyle = 'rgba(120,90,70,0.35)'; for (let i = 0; i < 7; i++) { const u = i / 7, x = 240 + u * 56 + (i % 2) * 7, y = 398 + u * 70; o.beginPath(); o.ellipse(x, y, 3, 5, 0.3, 0, 7); o.fill(); }
   o.restore();
   // a darker wet band and a line of foam at the edge
   o.strokeStyle = 'rgba(150,120,110,0.35)'; o.lineWidth = 8; o.beginPath(); o.moveTo(0, 388); o.quadraticCurveTo(120, 374, 220, 392); o.quadraticCurveTo(300, 404, W, 390); o.stroke();
@@ -96,20 +97,20 @@ MG.add({
     const s = g.s; if (s.held) return;
     // a cooked fish on the grill?
     const ready = s.grill.map((f, i) => f && g.t - f.t >= s.cook ? i : -1).filter(i => i >= 0);
-    if (ready.length && Math.hypot(x - FIRE.x, y - (FIRE.y - 8)) < 64) {
-      let bi = ready[0], bd = 1e9; for (const i of ready) { const d = Math.hypot(x - FIRE.x - SLOTS[i][0], y - FIRE.y - SLOTS[i][1]); if (d < bd) { bd = d; bi = i; } }
-      s.grill[bi] = null; s.held = { kind: 'cooked', x, y: y - 12 }; g.sfx('pop'); g.burst(FIRE.x + SLOTS[bi][0], FIRE.y + SLOTS[bi][1] - 6, ['#ffe08a', '#fff6d0', '#ffffff'], 8, 90); return;
+    if (ready.length && Math.hypot(x - FIRE.x, y - (FIRE.y - 8)) < 74) {
+      let bi = ready[0], bd = 1e9; for (const i of ready) { const [sx, sy] = slot(i), d = Math.hypot(x - sx, y - sy); if (d < bd) { bd = d; bi = i; } }
+      s.grill[bi] = null; s.held = { kind: 'cooked', x, y: y - 12 }; g.sfx('pop'); g.burst(slot(bi)[0], slot(bi)[1] - 6, ['#ffe08a', '#fff6d0', '#ffffff'], 8, 90); return;
     }
-    if (Math.hypot(x - NET.x, y - NET.y) < 62) { s.held = { kind: 'raw', x, y: y - 12 }; s.popT = g.t; g.sfx('splash'); g.burst(NET.x, NET.y - 12, ['#dff8ff', '#9fe0ff', '#ffffff'], 8, 100); }
+    if (Math.hypot(x - NET.x, y - NET.y) < 76) { s.held = { kind: 'raw', x, y: y - 12 }; s.popT = g.t; g.sfx('splash'); g.burst(NET.x, NET.y - 12, ['#dff8ff', '#9fe0ff', '#ffffff'], 8, 100); }
   },
   move(g, x, y) { const h = g.s.held; if (h) { h.x = x; h.y = y - 12; } },
   up(g, x, y) {
     const s = g.s, h = s.held; if (!h) return; s.held = null;
     if (h.kind === 'raw') {
       const free = s.grill.indexOf(null);
-      if (free >= 0 && Math.hypot(h.x - FIRE.x, h.y - FIRE.y) < 74) { s.grill[free] = { t: g.t }; g.sfx('fire'); g.sfx('crunch'); g.burst(FIRE.x + SLOTS[free][0], FIRE.y + SLOTS[free][1], ['#ffb040', '#ffe08a', '#ff7a3a'], 12, 130); return; }
+      if (free >= 0 && Math.hypot(h.x - FIRE.x, h.y - FIRE.y) < 84) { s.grill[free] = { t: g.t }; g.sfx('fire'); g.sfx('crunch'); g.burst(slot(free)[0], slot(free)[1], ['#ffb040', '#ffe08a', '#ff7a3a'], 12, 130); return; }
     } else {
-      let best = null, bd = 74; for (const p of s.people) { if (p.fed) continue; const d = Math.hypot(p.x - h.x, p.y - 40 - h.y); if (d < bd) { bd = d; best = p; } }
+      let best = null, bd = 80; for (const p of s.people) { if (p.fed) continue; const d = Math.hypot(p.x - h.x, p.y - 50 - h.y); if (d < bd) { bd = d; best = p; } }
       if (best) {
         best.fed = true; best.fedT = g.t; s.serveT = g.t; g.sfx('munch'); g.sfx('cheer'); g.burst(best.x, best.y - 50, ['#ffd45a', '#ffffff', '#ffb36a', '#8fd8ff'], 16, 170);
         if (s.people.every(p => p.fed)) { g.win(); g.sfx('harp'); g.burst(FIRE.x, FIRE.y - 40, ['#fff6c0', '#ffd45a', '#ffffff', '#ff9ab8'], 26, 220); }
@@ -132,7 +133,7 @@ MG.add({
     }
     const ri = s.grill.findIndex(f => f && g.t - f.t >= s.cook);
     const hungry = s.people.filter(p => !p.fed).length, onFire = s.grill.filter(Boolean).length;
-    if (ri >= 0) { const p = s.people.find(q => !q.fed); synth('down', FIRE.x + SLOTS[ri][0], FIRE.y + SLOTS[ri][1]); synth('move', p.x, p.y - 28); }
+    if (ri >= 0) { const p = s.people.find(q => !q.fed); synth('down', ...slot(ri)); synth('move', p.x, p.y - 28); }
     else if (onFire < Math.min(3, hungry)) { synth('down', NET.x, NET.y); synth('move', FIRE.x, FIRE.y + 10); }
   },
   draw(g, c) {
@@ -148,42 +149,38 @@ MG.add({
     c.drawImage(g.bake('easter_beach_boat', o => boat(o, 70, 404)), 0, 0, W, H);
     // the net, hauled up from the boat and bulging with fish
     const netHot = !g.done && !s.held && s.grill.some(f => !f) && s.people.some(p => !p.fed) && !s.grill.some(f => f && t - f.t >= s.cook);
-    drawNet(c, s, t, netHot, won);
+    c.save(); c.translate(NET.x, NET.y); c.scale(NK, NK); c.translate(-NET.x, -NET.y); drawNet(c, s, t, netHot, won); c.restore();
     // the fire: coals breathing, flames licking, smoke curling up into the dawn
-    c.drawImage(g.bake('easter_beach_fire', paintFireBase), 0, 0, W, H);
-    drawFire(c, s, t);
+    c.drawImage(g.bake('easter_beach_fire', o => { o.translate(FIRE.x, FIRE.y); o.scale(FK, FK); o.translate(-FIRE.x, -FIRE.y); paintFireBase(o); }), 0, 0, W, H);
+    c.save(); c.translate(FIRE.x, FIRE.y); c.scale(FK, FK); c.translate(-FIRE.x, -FIRE.y); drawFire(c, s, t); c.restore();
     // Jesus stands behind the fire with bread, ready to serve
     const serving = t - s.serveT < 0.5;
-    P.person(c, FIRE.x + 6, FIRE.y - 34, 1.25, { ...JESUS, t, phase: 1, bounce: 0.9, expr: won ? 'laugh' : 'happy', arms: won ? 'cheer' : serving ? 'reach' : 'out' });
+    P.person(c, FIRE.x + 8, FIRE.y - 40, 1.55, { ...JESUS, t, phase: 1, bounce: 0.9, expr: won ? 'laugh' : 'happy', arms: won ? 'cheer' : serving ? 'reach' : 'out' });
     // the grill stone with bread and the fish that are cooking
-    stone(c, s, t);
+    c.save(); c.translate(FIRE.x, FIRE.y); c.scale(FK, FK); c.translate(-FIRE.x, -FIRE.y); stone(c, s, t); c.restore();
     // the disciples, waiting on the sand
     const list = s.people.slice().sort((a, b) => a.y - b.y), pu = 0.5 + 0.5 * Math.sin(t * 6);
     const serveHot = s.held && s.held.kind === 'cooked';
     for (const p of list) {
       const ft = t - p.fedT, cheer = p.fed && (ft < 0.7 || won);
-      if (!p.fed && (serveHot || s.grill.some(f => f && t - f.t >= s.cook))) { c.save(); c.globalCompositeOperation = 'screen'; glow(c, p.x, p.y - 34, 52, '#fff0b0', 0.25 + 0.3 * pu); c.restore(); }
+      if (!p.fed && (serveHot || s.grill.some(f => f && t - f.t >= s.cook))) { c.save(); c.globalCompositeOperation = 'screen'; glow(c, p.x, p.y - 44, 64, '#fff0b0', 0.25 + 0.3 * pu); c.restore(); }
       const bob = cheer ? Math.abs(Math.sin(t * 9 + p.phase)) * 5 : 0;
-      seated(c, p.x, p.y - bob, 1.12, { ...p.look, t, phase: p.phase, bounce: p.fed ? 1.6 : 0.7, facing: p.x > FIRE.x ? -1 : 1,
-        expr: p.fed ? (cheer ? 'laugh' : 'happy') : lost ? 'sad' : 'surprised', arms: p.fed ? (cheer ? 'cheer' : 'hold') : 'down',
+      seated(c, p.x, p.y - bob, 1.4, { ...p.look, t, phase: p.phase, bounce: p.fed ? 1.6 : 0.7, facing: p.x > FIRE.x ? -1 : 1,
+        expr: p.fed ? (cheer ? 'laugh' : 'happy') : lost ? 'sad' : serveHot ? 'wow' : 'surprised', arms: p.fed ? (cheer ? 'cheer' : 'hold') : serveHot ? 'reach' : 'down',
         hold: p.fed && !cheer ? (cc, hx, hy) => portion(cc, hx, hy - 2, 0.7) : null });
-      if (p.fed && cheer) portion(c, p.x, p.y - 30 - bob, 0.8);
+      if (p.fed && cheer) portion(c, p.x, p.y - 38 - bob, 1);
       if (p.peter && !p.fed) { // Peter is still dripping from his swim
-        for (let i = 0; i < 4; i++) { const q = ((t * 1.4 + i * 0.25) % 1), dx = [-16, -6, 8, 15][i]; c.fillStyle = `rgba(150,210,240,${0.85 * (1 - q)})`; c.beginPath(); c.ellipse(p.x + dx, p.y - 66 + q * 50, 1.8, 2.6, 0, 0, 7); c.fill(); }
+        for (let i = 0; i < 4; i++) { const q = ((t * 1.4 + i * 0.25) % 1), dx = [-16, -6, 8, 15][i]; c.fillStyle = `rgba(150,210,240,${0.85 * (1 - q)})`; c.beginPath(); c.ellipse(p.x + dx * 1.25, p.y - 84 + q * 60, 2, 3, 0, 0, 7); c.fill(); }
       }
-      if (!p.fed) { // a hungry tummy rumble: a little thought bubble with a fish
-        const bx = p.x + (p.x > FIRE.x ? -28 : 28), by = p.y - 104 + Math.sin(t * 3 + p.phase) * 2;
-        c.fillStyle = 'rgba(255,253,245,0.92)'; c.strokeStyle = 'rgba(120,80,60,0.5)'; c.lineWidth = 1.4; c.beginPath(); c.arc((bx + p.x) / 2, by + 18, 2.4, 0, 7); c.fill(); c.beginPath(); c.arc(bx, by, 14, 0, 7); c.fill(); c.stroke();
-        c.save(); c.globalAlpha = 0.6 + 0.25 * Math.sin(t * 5 + p.phase); P.fishShape(c, bx - 2, by, 0.5, DONE); c.restore();
-      } else if (ft < 1.2) { c.save(); c.globalAlpha = 1 - ft / 1.2; c.fillStyle = '#ff7a9a'; for (let i = 0; i < 3; i++) heart(c, p.x - 14 + i * 14, p.y - 100 - ft * 40 - i * 6, 5); c.restore(); }
+      if (p.fed && ft < 1.2) { c.save(); c.globalAlpha = 1 - ft / 1.2; c.fillStyle = '#ff7a9a'; for (let i = 0; i < 3; i++) heart(c, p.x - 14 + i * 14, p.y - 124 - ft * 40 - i * 6, 5); c.restore(); }
     }
     // gulls overhead; on a fail, a cheeky gull makes off with a fish
     for (let i = 0; i < 2; i++) gull(c, 120 + i * 120 + Math.sin(t * 0.7 + i) * 30, 180 + i * 30 + Math.sin(t * 1.3 + i) * 6, 1, t + i);
     if (lost) { const q = Math.min(1, (t - g.doneAt) / 0.7), gx = NET.x + q * 200, gy = NET.y - 20 - q * 260 + Math.sin(q * Math.PI) * 30; gull(c, gx, gy, 1.6, t * 1.5); P.fishShape(c, gx + 2, gy + 10, 0.5, RAW); }
     // portions flying back after a miss
     for (const b of s.back) { const q = (t - b.t) / 0.35, tx = b.kind === 'raw' ? NET.x : FIRE.x, ty = b.kind === 'raw' ? NET.y - 10 : FIRE.y - 10; c.save(); c.globalAlpha = 1 - q * 0.6; const x = b.x + (tx - b.x) * q, y = b.y + (ty - b.y) * q - Math.sin(q * Math.PI) * 30; if (b.kind === 'raw') P.fishShape(c, x, y, 1, RAW); else portion(c, x, y, 1); c.restore(); }
-    if (s.held) { const h = s.held; c.fillStyle = 'rgba(80,50,30,0.2)'; c.beginPath(); c.ellipse(h.x, h.y + 28, 16, 5, 0, 0, 7); c.fill(); glow(c, h.x, h.y, 30, '#fff4c0', 0.6);
-      if (h.kind === 'raw') { c.save(); c.translate(h.x, h.y); c.rotate(Math.sin(t * 20) * 0.25); P.fishShape(c, 0, 0, 1.15, RAW); c.restore(); } else portion(c, h.x, h.y, 1.2); }
+    if (s.held) { const h = s.held; c.fillStyle = 'rgba(80,50,30,0.2)'; c.beginPath(); c.ellipse(h.x, h.y + 28, 16, 5, 0, 0, 7); c.fill(); glow(c, h.x, h.y, 34, '#fff4c0', 0.6);
+      if (h.kind === 'raw') { c.save(); c.translate(h.x, h.y); c.rotate(Math.sin(t * 20) * 0.25); P.fishShape(c, 0, 0, 1.35, RAW); c.restore(); } else portion(c, h.x, h.y, 1.4); }
     P.vignette(c, W, H, 0.28); P.grain(c, W, H, 0.06);
   },
 });

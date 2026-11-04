@@ -17,7 +17,7 @@ Holy Moly! is a WarioWare-style Bible microgame collection for kids aged 5 to 11
 | title.js | The animated title painting |
 | engine.js | Stages, microgame registry `MG`, input, the run loop (loaves, speed-ups, grace), screens, cards, saving, test hooks `HM` |
 | audio.js, music_tracks.js | Synthesized grooves, jingles and sound effects; two pre-rendered music-lab tracks |
-| games/*.js | One microgame per file, `<stage>_<id>.js`; `_shared.js` holds helpers used by several |
+| games/*.js | One microgame per file, `<stage>_<id>.js`; `_shared.js` holds helpers used by several. `games/PENDING` lists files still being written or reviewed; the build leaves them out, so remove a file's line only once it has passed review and the tests |
 
 How to write a microgame: docs/MICROGAMES.md.
 

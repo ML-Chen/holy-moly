@@ -679,7 +679,11 @@ def registry_complete(env):
     lst = pg.evaluate('HM.list()')
     stages = pg.evaluate('STAGES.map(s => s.id)')
     have = {f"{g['stage']}_{g['id']}" for g in lst}
-    files = {f.stem for f in (ROOT / 'src' / 'games').glob('*.js') if not f.name.startswith('_')}
+    import fnmatch
+    pend = ROOT / 'src' / 'games' / 'PENDING'
+    pending = [l.split('#')[0].strip() for l in pend.read_text().splitlines()] if pend.exists() else []
+    pending = [p for p in pending if p]  # files listed in src/games/PENDING are left out of the build on purpose
+    files = {f.stem for f in (ROOT / 'src' / 'games').glob('*.js') if not f.name.startswith('_') and not any(fnmatch.fnmatch(f.name, p) for p in pending)}
     for f in sorted(files - have): fails.append(f'src/games/{f}.js did not register a microgame named after it (syntax error, or stage/id differs from the file name)')
     for h in sorted(have - files): fails.append(f'microgame {h} has no file src/games/{h}.js')
     ids = [g['id'] for g in lst]

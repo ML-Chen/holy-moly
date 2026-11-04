@@ -1,7 +1,7 @@
 // PRAY! — Daniel 6:10. A new law says everyone must pray only to the king, but Daniel keeps praying at his open window toward Jerusalem.
 // Drag to tiptoe Daniel across the palace room while the comic officials read their scroll; stand still when one turns round. He kneels in golden light.
 const SK = P.SKIN, CL = P.CLOTH, HR = P.HAIR;
-const FLOOR = 470, DY = 604, START = 44, GOAL = 256, KNEEL_X = 270;
+const FLOOR = 470, DY = 588, START = 44, GOAL = 256, KNEEL_X = 270;
 const WX = 280, WR = 52, WA = 268, SILL = 446;              // the window: centre x, arch radius, arch centre y, sill
 const DANIEL = { skin: SK[2], robe: CL.indigo, stripe: CL.gold, hair: HR[5], beard: '#e8e2da', hairStyle: 'short' };
 const OFFS = [
@@ -209,7 +209,7 @@ MG.add({
     }
     s.offs.forEach((f, i) => {
       let want = 0;
-      if (g.result === 'win') want = Math.min(1, (g.t - s.winT) * 4);
+      if (g.result === 'win') want = 0;
       else if (i === s.cur) want = s.ph === 'turn' ? s.pt / 0.14 : s.ph === 'look' ? 1 : s.ph === 'back' ? 1 - s.pt / 0.16 : 0;
       f.look = want;
     });

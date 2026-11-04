@@ -39,7 +39,7 @@ function drawJar(c, x, lev, wk, band, t, glow, spill) {
   jarPath(c, x, b, w, h); c.fillStyle = sg; c.fill(); c.strokeStyle = '#6e5e4c'; c.lineWidth = 1.6; c.stroke();
   // the open inside, so we can see how full it is
   c.save(); jarPath(c, x, ib, iw, ih); c.clip();
-  const dg = c.createLinearGradient(0, ib - ih, 0, ib); dg.addColorStop(0, '#6a5848'); dg.addColorStop(1, '#3a2c28'); c.fillStyle = dg; c.fillRect(x - w, ib - ih - 4, w * 2, ih + 8);
+  const dg = c.createLinearGradient(0, ib - ih, 0, ib); dg.addColorStop(0, '#b8a488'); dg.addColorStop(1, '#8a765e'); c.fillStyle = dg; c.fillRect(x - w, ib - ih - 4, w * 2, ih + 8);
   if (lev > 0.004) {
     const wy = ib - lev * ih, top2 = P.mix(WATER[0], WINE[0], wk), bot2 = P.mix(WATER[1], WINE[1], wk);
     const wg = c.createLinearGradient(0, wy, 0, ib); wg.addColorStop(0, top2); wg.addColorStop(1, bot2); c.fillStyle = wg;

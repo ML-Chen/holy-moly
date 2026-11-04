@@ -10,7 +10,15 @@ def game_src(f):  # each microgame file gets its own scope; files starting with 
     return f'<script>\n// ---- {name} ----\n' + (src if name.startswith('_') else '(() => {\n' + src + '\n})();') + '\n</script>'
 # HM_ONLY=prefix1,prefix2 builds only the microgame files whose names start with one of the prefixes (shared '_' files are always kept)
 only = [p for p in os.environ.get('HM_ONLY', '').split(',') if p]
-files = [f for f in sorted(glob.glob(os.path.join(here, 'games', '*.js'))) if not only or os.path.basename(f).startswith('_') or any(os.path.basename(f).startswith(p) for p in only)]
+# games/PENDING lists microgames still being written or reviewed (file names or glob patterns, one per line); they are
+# left out of every build until their line is removed, so unfinished work never ships to players.
+import fnmatch
+pend_path = os.path.join(here, 'games', 'PENDING')
+pending = [l.split('#')[0].strip() for l in open(pend_path)] if os.path.exists(pend_path) else []
+pending = [p for p in pending if p]
+files = [f for f in sorted(glob.glob(os.path.join(here, 'games', '*.js')))
+         if not any(fnmatch.fnmatch(os.path.basename(f), p) for p in pending)
+         and (not only or os.path.basename(f).startswith('_') or any(os.path.basename(f).startswith(p) for p in only))]
 games = '\n'.join(game_src(f) for f in files)
 t = rd('game.html')
 for k, v in {'/*@@FREDOKA@@*/': b64('fredoka.woff'), '/*@@NUNITO@@*/': b64('nunito.woff'), '//@@PAINT@@': rd('paint.js'), '//@@TITLE@@': rd('title.js'),
