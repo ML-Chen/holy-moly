@@ -8,7 +8,7 @@ const NEIGHBOURS = [
   { skin: SK[1], robe: CL.saffron, stripe: CL.rust, hairStyle: 'curly', hair: HR[0], child: true },
 ];
 const SLOTS = [[124, 436], [222, 426], [314, 452], [58, 522], [168, 508], [274, 528], [108, 586], [238, 588]];
-const WX = 44, WY = 410, WS = 1.15;          // the woman, standing at the back with her lamp
+const WX = 46, WY = 416, WS = 1.3;          // the woman, standing at the back with her lamp
 const CLOTH_X = 262, CLOTH_Y = 336;          // the cloth with her nine other coins
 const SIL = ['#f4f4f8', '#c8ccd8', '#8a90a4'];
 
@@ -119,7 +119,7 @@ MG.add({
   up(g) { g.s.brush = null; },
   update(g, dt) { const s = g.s; for (const p of s.puffs) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.96; } s.puffs = s.puffs.filter(p => g.t - p.t < 0.8); },
   auto(g, dt, synth) { // a good sweeper heads for the glint and scrubs back and forth
-    const s = g.s, h = s.heaps[s.coin]; if (g.t < 0.35 || s.foundT >= 0) return;
+    const s = g.s, h = s.heaps[s.coin]; if (g.t < 0.35 || s.foundT >= 0 || g.t - (s.botT || 0) < 0.11) return; s.botT = g.t;
     if (!s.brush) { synth('down', h.x - 26, h.y); s.bk = 0; return; }
     s.bk = (s.bk || 0) + 1; synth('move', h.x + (s.bk % 2 ? 26 : -26), h.y + (s.bk % 3) * 3);
   },

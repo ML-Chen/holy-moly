@@ -13,7 +13,7 @@ const LOOKS = [
   { skin: SK[1], robe: CL.olive, stripe: CL.cream, hairStyle: 'curly', hair: HR[1], child: true },
 ];
 // back-row places the crowd shuffles to once they step aside
-const ASIDE = { '-1': [[26, 488], [76, 482], [118, 490]], '1': [[248, 486], [292, 480], [338, 488]] };
+const ASIDE = { '-1': [[24, 456], [72, 446], [116, 460]], '1': [[250, 454], [296, 444], [340, 458]] };
 
 // a kneeling figure: the person drawn lower, clipped at the ground, with folded knees and feet behind
 function kneel(c, x, y, s, o) {
@@ -26,16 +26,22 @@ function kneel(c, x, y, s, o) {
 function paintBg(o) {
   P.sky(o, W, H, ['#5aa0d8', '#94cbe8', '#d6eef0', '#fbe6bc'], { x: 300, y: 96, r: 22, color: '#fff3c8', glow: 220 });
   P.cloud(o, 90, 120, 0.8, '#fffaf0', '#d6dcec', 0.9);
-  P.hills(o, W, 330, 40, '#9ab0c8', '#8aa0bc', { seed: 7, freq: 0.01, dabs: 20, bottom: 400 });
-  P.hills(o, W, 372, 34, '#a8c070', '#88a858', { seed: 9, freq: 0.016, dabs: 40, rim: '#e8f0b0', bottom: 460 });
-  P.house(o, 200, 404, 56, 44, '#e8cba0'); P.house(o, 262, 410, 76, 56, '#dcb88c', { awning: '#c9443c' }); P.house(o, 4, 410, 72, 52, '#e6c49a');
-  P.tree(o, 120, 420, 0.75, '#6f9a52', 5); P.palm(o, 344, 420, 0.7, -0.15, 0, '#4f8a4a');
+  P.hills(o, W, 262, 40, '#9ab0c8', '#8aa0bc', { seed: 7, freq: 0.01, dabs: 20, bottom: 340 });
+  P.hills(o, W, 300, 34, '#a8c070', '#88a858', { seed: 9, freq: 0.016, dabs: 40, rim: '#e8f0b0', bottom: 400 });
+  P.house(o, 70, 320, 40, 30, '#e0c098'); P.house(o, 150, 316, 34, 26, '#d8b48c'); P.tree(o, 300, 330, 0.5, '#6a9450', 2);
+  P.house(o, 196, 372, 58, 46, '#e8cba0'); P.house(o, 262, 380, 80, 60, '#dcb88c', { awning: '#c9443c' }); P.house(o, 0, 380, 74, 56, '#e6c49a');
+  P.tree(o, 120, 388, 0.8, '#6f9a52', 5); P.palm(o, 346, 392, 0.75, -0.15, 0, '#4f8a4a');
   // the dusty village street
   const fg = o.createLinearGradient(0, 410, 0, H); fg.addColorStop(0, '#e8cf9e'); fg.addColorStop(1, '#c49a62'); o.fillStyle = fg;
-  o.beginPath(); o.moveTo(0, 420); o.quadraticCurveTo(180, 404, W, 422); o.lineTo(W, H); o.lineTo(0, H); o.closePath(); o.fill();
-  const r = P.rng(13); for (let i = 0; i < 60; i++) { o.fillStyle = P.rgba(r() < 0.5 ? '#fff2d0' : '#a87a48', 0.2); o.beginPath(); o.ellipse(r() * W, 430 + r() * 210, 6 + r() * 12, 2 + r() * 2, 0, 0, 7); o.fill(); }
+  o.beginPath(); o.moveTo(0, 384); o.quadraticCurveTo(180, 370, W, 388); o.lineTo(W, H); o.lineTo(0, H); o.closePath(); o.fill();
+  const r = P.rng(13); for (let i = 0; i < 60; i++) { o.fillStyle = P.rgba(r() < 0.5 ? '#fff2d0' : '#a87a48', 0.2); o.beginPath(); o.ellipse(r() * W, 392 + r() * 248, 6 + r() * 12, 2 + r() * 2, 0, 0, 7); o.fill(); }
   for (let i = 0; i < 9; i++) { const x = r() * W, y = 470 + r() * 150; o.fillStyle = 'rgba(150,120,90,0.6)'; o.beginPath(); o.ellipse(x, y, 3 + r() * 3, 2, 0, 0, 7); o.fill(); }
-  P.grassTufts(o, W, 418, 450, 16, '#8aa04a', 4); P.flowers(o, W, 424, 452, 10, ['#f4d35e', '#ffffff', '#ee6c8a'], 3);
+  P.grassTufts(o, W, 384, 416, 16, '#8aa04a', 4); P.flowers(o, W, 388, 418, 10, ['#f4d35e', '#ffffff', '#ee6c8a'], 3);
+  // the village well
+  o.fillStyle = 'rgba(40,20,40,0.2)'; o.beginPath(); o.ellipse(176, 412, 30, 6, 0, 0, 7); o.fill();
+  const wg = o.createLinearGradient(150, 0, 202, 0); wg.addColorStop(0, '#e0cdb0'); wg.addColorStop(1, '#9a8468'); o.fillStyle = wg; o.fillRect(150, 386, 52, 26); o.fillStyle = '#efe2cc'; o.beginPath(); o.ellipse(176, 386, 26, 6, 0, 0, 7); o.fill(); o.fillStyle = '#3a4a5a'; o.beginPath(); o.ellipse(176, 386, 20, 4, 0, 0, 7); o.fill();
+  o.strokeStyle = '#6a4a2e'; o.lineWidth = 3; o.beginPath(); o.moveTo(156, 386); o.lineTo(156, 352); o.lineTo(196, 352); o.lineTo(196, 386); o.stroke();
+  P.donkey(o, 236, 414, 0.9, { facing: -1 });
 }
 
 MG.add({
@@ -92,7 +98,7 @@ MG.add({
     if (s.goT < 0) { synth('down', MX, MY - 40); synth('up', MX, MY - 40); }
   },
   draw(g, c) {
-    const s = g.s, t = g.t, won = g.result === 'win', heal = s.touchT >= 0 ? Math.min(1, (t - s.touchT) / 0.6) : 0, clear = s.crowd.every(p => p.aside);
+    const s = g.s, t = g.t, won = g.result === 'win', heal = s.touchT >= 0 ? Math.min(1, (t - s.touchT) / 0.3) : 0, clear = s.crowd.every(p => p.aside);
     c.drawImage(g.bake('jesus_touch_bg', paintBg), 0, 0, W, H);
     P.cloud(c, 250 + Math.sin(t * 0.3) * 8 + t * 2, 170, 0.55, '#fffaf0', '#d6dcec', 0.9);
     // the crowd who stepped aside, in the back row
@@ -111,8 +117,8 @@ MG.add({
     if (heal < 1) { const lg = c.createRadialGradient(MX, MY - 50, 10, MX, MY - 40, 90); lg.addColorStop(0, `rgba(90,100,140,${0.32 * (1 - heal)})`); lg.addColorStop(1, 'rgba(90,100,140,0)'); c.fillStyle = lg; c.fillRect(MX - 90, MY - 140, 180, 180); }
     c.save(); c.globalAlpha = 1 - heal; kneel(c, MX, MY, MS, { ...base, robe: '#a8a29a', expr: hope ? 'surprised' : 'sad', arms: hope ? 'reach' : 'pray' });
     // a few pale patches on his face and hands
-    const hy = MY + 14 * MS - (40 + 15 + 1) * MS; c.fillStyle = 'rgba(250,244,232,0.75)';
-    for (const [dx, dy, r] of [[-9, -6, 3.2], [7, 9, 2.4], [-4, 12, 2]]) { c.beginPath(); c.ellipse(MX + dx * MS, hy + dy * MS, r * MS, r * MS * 0.7, 0.4, 0, 7); c.fill(); }
+    const hy = MY + 14 * MS - (40 + 15 + 1) * MS; c.fillStyle = 'rgba(252,248,240,0.95)'; c.strokeStyle = 'rgba(200,170,150,0.7)'; c.lineWidth = 1;
+    for (const [dx, dy, r] of [[-8, -7, 3.4], [8, 8, 2.6], [-3, 12, 2.2]]) { c.beginPath(); c.ellipse(MX + dx * MS, hy + dy * MS, r * MS, r * MS * 0.7, 0.4, 0, 7); c.fill(); c.stroke(); }
     c.restore();
     if (heal > 0) { c.save(); c.globalAlpha = heal; kneel(c, MX, MY - hop, MS, { ...base, robe: CL.saffron, stripe: CL.rust, expr: 'laugh', arms: 'cheer', bounce: 0 }); c.restore(); }
     // a gentle glowing ring on the man once the way is clear

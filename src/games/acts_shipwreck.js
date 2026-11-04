@@ -12,21 +12,21 @@ const SWIMMERS = [
 ];
 const START = [[70, 318], [290, 330], [180, 372], [100, 418], [276, 424]];
 const SPOTS = [[128, 548], [236, 546], [96, 598], [266, 600], [180, 608]];
-const BLANKETS = ['#c9443c', '#e8a33a', '#3f4f8f', '#2f8f8a', '#8a4d7a'];
+const BLANKETS = ['#c9443c', '#3f4f8f', '#c9443c', '#e8a33a', '#8a4d7a'];   // chosen to stand out from each swimmer's robe
 const ISLANDERS = [
   { x: 40, y: 586, f: 1, o: { skin: SK[3], robe: CL.sand, stripe: CL.terracotta, hairStyle: 'curly', hair: HR[0] } },
   { x: 322, y: 584, f: -1, o: { skin: SK[4], robe: CL.green, stripe: CL.cream, beard: true, hair: HR[1] } },
   { x: 348, y: 614, f: -1, o: { skin: SK[2], robe: CL.saffron, stripe: CL.white, hairStyle: 'long', hair: HR[0], child: true } },
 ];
-const scAt = y => 0.72 + Math.max(0, (y - 290) / 190) * 0.42;
+const scAt = y => 1.0 + Math.max(0, (y - 300) / 180) * 0.35;
 
 function glow(c, x, y, r, col, a) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, P.rgba(col, a)); g.addColorStop(1, P.rgba(col, 0)); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
 const shoreY = x => SHORE + Math.sin(x * 0.03) * 5;
 function paintSky(o) {
   // the storm is breaking up: heavy violet clouds on the left, warm morning light opening on the right
   P.sky(o, W, H, ['#4a4e7a', '#7a7aa8', '#d8a8b0', '#ffd8b0'], { x: 296, y: 196, r: 24, color: '#fff0c0', glow: 230 });
-  P.stormBank(o, W, 40, 0, 7);
-  P.cloud(o, 70, 150, 0.9, '#e8e0f0', '#8a84b0', 0.95); P.cloud(o, 200, 112, 0.7, '#f0e4f0', '#9a8cb8', 0.9);
+  for (const [x, y, sc] of [[30, 40, 1.5], [170, 20, 1.6], [320, 50, 1.3], [90, 110, 1.1], [250, 120, 0.9]]) P.cloud(o, x, y, sc, '#a8a0c8', '#5a5684', 0.95);
+  P.cloud(o, 70, 168, 0.8, '#ece4f4', '#8a84b0', 0.9); P.cloud(o, 196, 150, 0.6, '#f4e8f0', '#9a8cb8', 0.85);
   P.hills(o, W, 236, 18, '#9a8ab0', '#8a7aa0', { seed: 91, freq: 0.02, dabs: 10, bottom: 260 });
 }
 function paintBeach(o) {
@@ -57,25 +57,27 @@ function ship(c, t) { // the ship stuck fast on a sandbar, bow up, gently rockin
   c.fillStyle = '#f2e6cf'; c.strokeStyle = '#a89878'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(-28, -82); c.quadraticCurveTo(-2, -64 + Math.sin(t * 3) * 2, 24, -88); c.quadraticCurveTo(-2, -76, -28, -82); c.fill(); c.stroke();
   c.restore();
   // foam where the waves meet the sandbar
-  c.fillStyle = 'rgba(255,255,255,0.8)'; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(16 + i * 14, 292 + Math.sin(t * 3 + i) * 2, 3 + Math.sin(t * 4 + i * 2) * 1.2, 0, 7); c.fill(); }
+  for (let k = 0; k < 2; k++) { c.fillStyle = `rgba(255,255,255,${0.55 - k * 0.2})`; c.beginPath(); c.ellipse(64 + Math.sin(t * 2) * 3, 290 + k * 5, 62 - k * 10 + Math.sin(t * 3 + k) * 4, 4 + k * 2, 0, 0, 7); c.fill(); }
 }
 // a swimmer in the water (only head, shoulders and waving arms show above the waterline), optionally on a plank
 function swimmer(c, x, y, sc, o, t, ph, held) {
-  const bob = held ? 0 : Math.sin(t * 2.6 + ph) * 3, wy = y + bob, feet = wy + 34 * sc;
+  const bob = held ? 0 : Math.sin(t * 2.6 + ph) * 3, wy = y + bob, feet = wy + 22 * sc;
   if (o.plank) { c.save(); c.translate(x, wy + 2); c.rotate(Math.sin(t * 2 + ph) * 0.06); c.fillStyle = '#8a5a3a'; c.fillRect(-30 * sc, -4 * sc, 60 * sc, 8 * sc); c.fillStyle = 'rgba(255,220,170,0.45)'; c.fillRect(-30 * sc, -4 * sc, 60 * sc, 2.4 * sc); c.strokeStyle = '#4a2c1a'; c.lineWidth = 1; c.strokeRect(-30 * sc, -4 * sc, 60 * sc, 8 * sc); c.restore(); }
-  c.save(); c.beginPath(); c.rect(x - 60, 0, 120, wy + 1); c.clip();
+  c.save(); c.beginPath(); c.rect(x - 80, 0, 160, wy + 1); c.clip();
   P.person(c, x, feet, sc, { ...o, t, phase: ph, bounce: 0.4, expr: held ? 'laugh' : 'wow', arms: held ? 'cheer' : o.plank ? 'out' : 'wave' });
   c.restore();
   // ripples round the body at the waterline
   c.strokeStyle = 'rgba(255,255,255,0.85)'; c.lineWidth = 2; for (let k = 0; k < 2; k++) { const q = (t * 1.2 + k * 0.5 + ph) % 1; c.globalAlpha = 1 - q; c.beginPath(); c.ellipse(x, wy + 1, (16 + q * 22) * sc, (4 + q * 5) * sc, 0, 0, 7); c.stroke(); } c.globalAlpha = 1;
   c.fillStyle = 'rgba(255,255,255,0.7)'; c.beginPath(); c.ellipse(x, wy + 1, 15 * sc, 3.4 * sc, 0, 0, 7); c.fill();
 }
-function blanket(c, x, y, sc, col, ch) { // a blanket round the shoulders of someone standing at (x, y)
+function blanket(c, x, y, sc, col, ch) { // a striped wool blanket wrapped round the shoulders of someone standing at (x, y)
   const H2 = ch ? 0.82 : 1, top = y - 40 * H2 * sc;
   c.save(); c.translate(x, top); c.scale(sc, sc);
-  const g = c.createLinearGradient(-16, 0, 16, 30); g.addColorStop(0, P.shade(col, 0.18)); g.addColorStop(1, P.shade(col, -0.2)); c.fillStyle = g; c.strokeStyle = P.shade(col, -0.45); c.lineWidth = 1.4;
-  c.beginPath(); c.moveTo(-9, -2); c.quadraticCurveTo(-18, 2, -17, 30); c.lineTo(-4, 32); c.lineTo(-2, 8); c.lineTo(2, 8); c.lineTo(4, 32); c.lineTo(17, 30); c.quadraticCurveTo(18, 2, 9, -2); c.closePath(); c.fill(); c.stroke();
-  c.fillStyle = P.rgba('#fff4dc', 0.6); c.fillRect(-17, 24, 13, 2.5); c.fillRect(4, 24, 13, 2.5);
+  const path = () => { c.beginPath(); c.moveTo(-10, -4); c.quadraticCurveTo(-22, -2, -21, 30); c.lineTo(-6, 33); c.quadraticCurveTo(-4, 14, 0, 10); c.quadraticCurveTo(4, 14, 6, 33); c.lineTo(21, 30); c.quadraticCurveTo(22, -2, 10, -4); c.quadraticCurveTo(0, 0, -10, -4); c.closePath(); };
+  const g = c.createLinearGradient(-20, 0, 20, 30); g.addColorStop(0, P.shade(col, 0.2)); g.addColorStop(1, P.shade(col, -0.18)); c.fillStyle = g; path(); c.fill();
+  c.save(); path(); c.clip(); c.fillStyle = P.rgba('#fff4dc', 0.85); for (const yy of [6, 18]) c.fillRect(-24, yy, 48, 3); c.fillStyle = P.rgba(P.shade(col, -0.45), 0.6); for (const yy of [10, 22]) c.fillRect(-24, yy, 48, 1.6); c.restore();
+  c.strokeStyle = P.shade(col, -0.45); c.lineWidth = 1.4; path(); c.stroke();
+  c.strokeStyle = P.rgba('#fff4dc', 0.9); c.lineWidth = 1; for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(-19 + k * 3, 31); c.lineTo(-19 + k * 3, 35); c.moveTo(8 + k * 3, 31); c.lineTo(8 + k * 3, 35); c.stroke(); }
   c.restore();
 }
 
@@ -94,7 +96,7 @@ MG.add({
   },
   down(g, x, y) {
     const s = g.s; if (s.held) return;
-    let best = null, bd = 46; for (const w of s.sw) { if (w.state !== 'sea') continue; const sc = scAt(w.y), d = Math.hypot(x - w.x, y - (w.y - 22 * sc)); if (d < bd) { bd = d; best = w; } }
+    let best = null, bd = 54; for (const w of s.sw) { if (w.state !== 'sea') continue; const sc = scAt(w.y), d = Math.hypot(x - w.x, y - (w.y - 30 * sc)); if (d < bd) { bd = d; best = w; } }
     if (best) { s.held = best; best.dx = best.x - x; best.dy = best.y - y; g.sfx('splash'); }
   },
   move(g, x, y) {
@@ -121,7 +123,7 @@ MG.add({
     const s = g.s; if (g.t < 0.35 || g.done) return; const k = Math.floor((g.t - 0.35) / 0.13); if (k === s.botK) return; s.botK = k;
     if (s.held) { const w = s.held; synth('move', w.x - w.dx, SHORE + 30 - w.dy); synth('up', w.x - w.dx, SHORE + 30 - w.dy); return; }
     const w = s.sw.filter(q => q.state === 'sea').sort((a, b) => b.y - a.y)[0]; if (!w) return;
-    const sc = scAt(w.y), x = w.x, y = w.y - 22 * sc; synth('down', x, y); synth('move', x, (y + SHORE) / 2);
+    const sc = scAt(w.y), x = w.x, y = w.y - 30 * sc; synth('down', x, y); synth('move', x, (y + SHORE) / 2);
   },
   draw(g, c) {
     const s = g.s, t = g.t, won = g.result === 'win', lost = g.result === 'fail', pu = 0.5 + 0.5 * Math.sin(t * 6), since = won ? t - g.doneAt : 0;
@@ -157,12 +159,11 @@ MG.add({
     // swimmers still in the sea, with a glow so they are easy to grab
     for (const w of s.sw.filter(q => q.state === 'sea').sort((a, b) => a.y - b.y)) {
       const sc = scAt(w.y), held = w === s.held;
-      if (!g.done && !held) { c.save(); c.globalCompositeOperation = 'screen'; glow(c, w.x, w.y - 20 * sc, 40 * sc, '#fff0b0', 0.22 + 0.25 * pu); c.restore(); }
+      if (!g.done && !held) { c.save(); c.globalCompositeOperation = 'screen'; glow(c, w.x, w.y - 28 * sc, 44 * sc, '#fff0b0', 0.22 + 0.25 * pu); c.restore(); }
       swimmer(c, w.x, w.y, sc, w.o, t, w.ph, held);
-      if (lost) { c.fillStyle = 'rgba(220,240,255,0.9)'; const q = ((t - g.doneAt) * 2 + w.ph) % 1; c.beginPath(); c.arc(w.x + 10 * sc, w.y - 34 * sc - q * 14, 2.4 * (1 - q) + 1, 0, 7); c.fill(); }
+      if (lost) { c.fillStyle = 'rgba(220,240,255,0.9)'; for (let k = 0; k < 5; k++) { const q = ((t - g.doneAt) * 2.2 + k * 0.2 + w.ph) % 1; c.beginPath(); c.arc(w.x + (k - 2) * 6 * q * sc, w.y - 46 * sc - Math.sin(q * Math.PI) * 26 * sc, 2.6 * (1 - q) + 1, 0, 7); c.fill(); } }
     }
     // a friendly dolphin leaps past if time runs out
-    if (lost) { const q = Math.min(1, (t - g.doneAt) / 0.75), dx = -30 + q * 420, dy = 400 - Math.sin(q * Math.PI) * 90; dolphin(c, dx, dy, Math.atan2(-Math.cos(q * Math.PI) * 90 * Math.PI, 420) * -1); }
     for (const p of s.spray) { c.fillStyle = `rgba(230,250,255,${1 - (t - p.t) / 0.6})`; c.beginPath(); c.arc(p.x, p.y, 2.6, 0, 7); c.fill(); }
     P.vignette(c, W, H, 0.28); P.grain(c, W, H, 0.06);
   },
@@ -171,12 +172,4 @@ function land(g, w) {
   const s = g.s; w.state = 'walk'; w.t = g.t; w.fx = w.x; w.fy = Math.max(w.y, shoreY(w.x) + 6); w.spot = s.safe++;
   g.sfx('splashbig'); g.sfx('cheer'); g.burst(w.x, w.fy - 30, ['#ffd45a', '#ffffff', '#9fe0ff', '#ff9ab8'], 16, 180);
   if (s.safe >= s.sw.length) { g.win(); g.sfx('harp'); g.burst(FIRE.x, FIRE.y - 40, ['#fff6c0', '#ffd45a', '#ffffff', '#ff9ab8', '#9fe0ff'], 30, 240); }
-}
-function dolphin(c, x, y, a) {
-  c.save(); c.translate(x, y); c.rotate(a);
-  const g = c.createLinearGradient(0, -14, 0, 12); g.addColorStop(0, '#7a9ac0'); g.addColorStop(0.6, '#a8c0d8'); g.addColorStop(1, '#e8eef4'); c.fillStyle = g; c.strokeStyle = '#4a6a90'; c.lineWidth = 1.5;
-  c.beginPath(); c.moveTo(34, 2); c.quadraticCurveTo(20, -14, -10, -10); c.quadraticCurveTo(-30, -6, -38, 0); c.lineTo(-48, -10); c.lineTo(-46, 6); c.lineTo(-36, 4); c.quadraticCurveTo(-10, 12, 22, 8); c.closePath(); c.fill(); c.stroke();
-  c.beginPath(); c.moveTo(-2, -10); c.lineTo(-10, -22); c.lineTo(8, -11); c.fill(); c.stroke();
-  P.eye(c, 20, -3, 1.8); P.blush(c, 24, 3, 2.4);
-  c.restore();
 }
