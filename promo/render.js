@@ -8,17 +8,18 @@ const {chromium} = require('playwright'); const fs = require('fs'), path = requi
 const [html, out = '/tmp/hm-promo'] = process.argv.slice(2);
 const ROOT = path.resolve(__dirname, '..');
 const BAR = 1.6, FPS = 30;
-const MUSIC = process.env.PROMO_MUSIC || path.join(ROOT, '..', 'music-lab', 'demos', 'edm', 'future-bass', 'paper_lanterns_v4.mp3');
+const MUSIC = process.env.PROMO_MUSIC ||   // PROMO_MUSIC=file.mp3 uses another track (cut from its start, faded at the end)
+  path.join(ROOT, '..', 'music-lab', 'demos', 'edm', 'future-bass', 'paper_lanterns_v4.mp3');
 const ff = (...a) => execFileSync('ffmpeg', ['-y', '-hide_banner', '-loglevel', 'error', ...a]);
 for (const d of ['segs', 'stills']) fs.mkdirSync(path.join(out, d), {recursive: true});
 
 // Shots, in bars of 1.6 s. mg: a microgame played by its bot from `from` seconds in. Music map (after the edit below):
 // 0 soft hook, 6.4 beat comes in, 19.2 quiet break and build, 32.0 drop, 51.2 outro rings out.
 const SHOTS = [
+  {id: 'title', title: true, first: true, bars: 2},   // the first frame is the preview image: the logo over the crowd, no flash
   {id: 'part', mg: 'part', bars: 2, from: 0},
   {id: 'share', mg: 'share', bars: 1, from: 0.7},
   {id: 'open', mg: 'open', bars: 1, from: 0.9},
-  {id: 'title', title: true, bars: 2},
   {id: 'light', mg: 'light', bars: 1, from: 0.6}, {id: 'board', mg: 'board', bars: 1, from: 0.7},
   {id: 'climb', mg: 'climb', bars: 1, from: 0.6}, {id: 'spit', mg: 'spit', bars: 1, from: 0.5},
   {id: 'dance', mg: 'dance', bars: 1, from: 1.2}, {id: 'wine', mg: 'wine', bars: 1, from: 0.9},
@@ -79,7 +80,7 @@ const CAMS = [[1.0, 1.08, 0, 0, 0, -0.01], [1.1, 1.02, -0.02, 0.01, 0, 0], [1.03
           c.fillStyle = 'rgba(40,16,48,0.5)'; roundRect(c, 46, 286, 268, 40, 20); c.fill(); c.fillStyle = '#fff6dc'; c.fillText('ml-chen.github.io/holy-moly', 180, 307); c.restore();
           if (t > 3.6) { c.fillStyle = `rgba(20,8,24,${Math.min(1, (t - 3.6) / 3.6)})`; c.fillRect(0, 0, 360, 640); }
         }
-        if (t < 0.25) { c.fillStyle = `rgba(255,250,235,${1 - t / 0.25})`; c.fillRect(0, 0, 360, 640); }   // a white flash on the cut
+        if (t < 0.25 && !s.first) { c.fillStyle = `rgba(255,250,235,${1 - t / 0.25})`; c.fillRect(0, 0, 360, 640); }   // a white flash on the cut
       },
     };
   });
@@ -110,8 +111,10 @@ const CAMS = [[1.0, 1.08, 0, 0, 0, -0.01], [1.1, 1.02, -0.02, 0.01, 0, 0], [1.03
   const list = path.join(out, 'segs.txt'); fs.writeFileSync(list, segs.map(f => `file '${f}'`).join('\n'));
   const video = path.join(out, 'video.mp4'); ff('-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', video);
   const final = path.join(out, 'holymoly-promo.mp4');
+  // Paper Lanterns is edited (track 6.4-51.2 s, then 57.6 s on); any other track (PROMO_MUSIC) plays from its start
+  const edit = process.env.PROMO_MUSIC ? `[1:a]anull[m]` : `[1:a]atrim=6.4:51.2,asetpts=PTS-STARTPTS[a1];[1:a]atrim=57.6,asetpts=PTS-STARTPTS[a2];[a1][a2]concat=n=2:v=0:a=1[m]`;
   ff('-i', video, '-i', MUSIC, '-filter_complex',
-     `[1:a]atrim=6.4:51.2,asetpts=PTS-STARTPTS[a1];[1:a]atrim=57.6,asetpts=PTS-STARTPTS[a2];[a1][a2]concat=n=2:v=0:a=1,afade=t=in:d=0.3,afade=t=out:st=${(total - 3).toFixed(2)}:d=3,volume=0.9[a]`,
+     `${edit};[m]afade=t=in:d=0.05,afade=t=out:st=${(total - 2).toFixed(2)}:d=2,volume=0.9[a]`,
      '-map', '0:v', '-map', '[a]', '-t', total.toFixed(3), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', final);
   const st = fs.readdirSync(path.join(out, 'stills')).filter(f => f.endsWith('.jpg')).sort().map(f => path.join(out, 'stills', f));
   ff(...st.flatMap(f => ['-i', f]), '-filter_complex', st.map((_, i) => `[${i}:v]scale=216:384[s${i}]`).join(';') + ';' + st.map((_, i) => `[s${i}]`).join('') +

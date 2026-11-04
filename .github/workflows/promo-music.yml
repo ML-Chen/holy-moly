@@ -1,0 +1,30 @@
+# Generates music options for the promo video with ElevenLabs Music (promo/make_music.py) and commits the MP3s to
+# promo/music/ on the branch that ran it. Runs on pushes to the promo-music branch that change the script or this
+# workflow, and on demand. Needs the repository secret ELEVENLABS_API_KEY.
+name: Promo music
+on:
+  push:
+    branches: [promo-music]
+    paths: ['promo/make_music.py', '.github/workflows/promo-music.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  music:
+    if: github.repository == 'ML-Chen/holy-moly'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Generate the tracks
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+        run: |
+          if [ -z "$ELEVENLABS_API_KEY" ]; then echo "::error::The repository secret ELEVENLABS_API_KEY is not set"; exit 1; fi
+          python3 promo/make_music.py promo/music 62
+      - name: Commit the tracks to this branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add promo/music
+          git commit -m "Promo music options from ElevenLabs (run ${GITHUB_RUN_NUMBER})" || exit 0
+          git push origin "HEAD:${GITHUB_REF_NAME}"
