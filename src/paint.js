@@ -211,6 +211,32 @@ const P = (() => {
     else { ctx.beginPath(); ctx.moveTo(mx - r * 0.1, my); ctx.lineTo(mx + r * 0.1, my); ctx.stroke(); }
   }
   // Limb: tapered rounded stroke from a to b
+  // sleeveArm: a tapered sleeve from shoulder (ax,ay) to wrist (bx,by) with a soft elbow bend, a cuff, light and shade,
+  // and a small mitten hand with a thumb. side is -1 for the figure's left arm and 1 for its right.
+  function sleeveArm(ctx, ax, ay, bx, by, side, col, outline, skin, skinLine, cuff) {
+    const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+    let nx = -uy, ny = ux; if (nx * side < 0) { nx = -nx; ny = -ny; }          // bend the elbow away from the body
+    const bend = Math.min(5, L * 0.14), mx = (ax + bx) / 2 + nx * bend * 2, my = (ay + by) / 2 + ny * bend * 2;
+    const pt = t => { const a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, c = t * t; return [a * ax + b * mx + c * bx, a * ay + b * my + c * by]; };
+    const tan = t => { const x = 2 * (1 - t) * (mx - ax) + 2 * t * (bx - mx), y = 2 * (1 - t) * (my - ay) + 2 * t * (by - my), l = Math.hypot(x, y) || 1; return [x / l, y / l]; };
+    const wAt = t => 7.4 - 2.6 * t, N = 12, left = [], right = [];
+    for (let i = 0; i <= N; i++) { const t = i / N * 0.9, [x, y] = pt(t), [tx, ty] = tan(t), w = wAt(t) / 2; left.push([x - ty * w, y + tx * w]); right.push([x + ty * w, y - tx * w]); }
+    const poly = () => { ctx.beginPath(); ctx.moveTo(...left[0]); for (const q of left) ctx.lineTo(...q); for (let i = right.length - 1; i >= 0; i--) ctx.lineTo(...right[i]); ctx.closePath(); };
+    const g = ctx.createLinearGradient(ax - nx * 4, ay - ny * 4, ax + nx * 4, ay + ny * 4); g.addColorStop(0, shade(col, -0.12)); g.addColorStop(1, shade(col, 0.16));
+    ctx.lineJoin = 'round'; poly(); ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = outline; ctx.lineWidth = 1.6; ctx.stroke();
+    // a soft highlight along the outer edge of the sleeve
+    ctx.save(); poly(); ctx.clip(); ctx.strokeStyle = rgba(shade(col, 0.45), 0.55); ctx.lineWidth = 1.6; ctx.beginPath(); const side2 = (nx * (left[0][0] - ax) + ny * (left[0][1] - ay)) > 0 ? left : right; ctx.moveTo(...side2[1]); for (let i = 2; i < side2.length - 1; i++) ctx.lineTo(...side2[i]); ctx.stroke(); ctx.restore();
+    // cuff
+    const [cx0, cy0] = pt(0.86), [ctx0, cty0] = tan(0.86), cw = wAt(0.86) / 2 + 0.6; ctx.strokeStyle = cuff || shade(col, 0.3); ctx.lineWidth = 2.2; ctx.lineCap = 'butt'; ctx.beginPath(); ctx.moveTo(cx0 - cty0 * cw, cy0 + ctx0 * cw); ctx.lineTo(cx0 + cty0 * cw, cy0 - ctx0 * cw); ctx.stroke(); ctx.lineCap = 'round';
+    // mitten hand with a thumb
+    const [ex, ey] = tan(1), hx = bx + ex * 1.2, hy = by + ey * 1.2, ang = Math.atan2(ey, ex);
+    ctx.save(); ctx.translate(hx, hy); ctx.rotate(ang); ctx.fillStyle = skin; ctx.strokeStyle = skinLine; ctx.lineWidth = 1.2;
+    const th = (side > 0 ? -1 : 1) * (Math.abs(ang) > Math.PI / 2 ? -1 : 1);
+    ctx.beginPath(); ctx.ellipse(0.6, th * 2.6, 1.9, 1.4, th * 0.6, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(1.2, 0, 4.0, 3.3, 0, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = rgba('#ffffff', 0.22); ctx.beginPath(); ctx.ellipse(0.4, -1.2, 1.8, 0.9, 0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
   function limb(ctx, ax, ay, bx, by, wdt, col, outline) { ctx.lineCap = 'round'; ctx.strokeStyle = outline; ctx.lineWidth = wdt + 2.4; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); ctx.strokeStyle = col; ctx.lineWidth = wdt; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); }
   // person(ctx, x, y, s, opts): x,y is between the feet; s=1 is about 64px tall.
   // opts: skin, robe, stripe, sash, hair, hairStyle(short|long|curly|bun|bald), beard, head(scarf|wrap|crown|none), headCol,
@@ -257,11 +283,9 @@ const P = (() => {
     // arms
     // arms: raised arms are drawn last, in front of the hair, so they never look like they grow out of the head
     const raised = arm.map(([hx, hy]) => hy < shoulderY - 4);
-    const drawArm = (i) => { limb(ctx, i ? sx : -sx, shoulderY, arm[i][0], arm[i][1], 5.5, shade(robe, 0.05), outline); ctx.fillStyle = skin; ctx.strokeStyle = skinLine; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(arm[i][0], arm[i][1], 3.6, 0, 7); ctx.fill(); ctx.stroke(); };
-    if (!raised[0]) limb(ctx, -sx, shoulderY, arm[0][0], arm[0][1], 5.5, shade(robe, 0.05), outline);
-    if (!raised[1]) limb(ctx, sx, shoulderY, arm[1][0], arm[1][1], 5.5, shade(robe, 0.05), outline);
-    ctx.fillStyle = skin; ctx.strokeStyle = skinLine; ctx.lineWidth = 1.2;
-    arm.forEach(([hx, hy], i) => { if (raised[i]) return; ctx.beginPath(); ctx.arc(hx, hy, 3.6, 0, 7); ctx.fill(); ctx.stroke(); });
+    const drawArm = (i) => sleeveArm(ctx, i ? sx : -sx, shoulderY, arm[i][0], arm[i][1], i ? 1 : -1, shade(robe, 0.05), outline, skin, skinLine, stripe && shade(stripe, 0.15));
+    if (!raised[0]) drawArm(0);
+    if (!raised[1]) drawArm(1);
     if (o.hold) { ctx.save(); o.hold(ctx, (arm[0][0] + arm[1][0]) / 2, (arm[0][1] + arm[1][1]) / 2); ctx.restore(); }
     // neck + head
     ctx.fillStyle = skin; ctx.fillRect(-3.5, bodyTop - 4, 7, 6); ctx.fillStyle = 'rgba(80,30,30,0.18)'; ctx.fillRect(-3.5, bodyTop - 4, 7, 3);
