@@ -1,11 +1,12 @@
 // HIDE! — the brave midwives Shiphrah and Puah keep the Hebrew baby boys safe (Exodus 1:15–21).
 // Giggling babies peek out around a courtyard; tap each one to tuck it in under a blanket before the sleepy guard strolls past.
+// x,y: foot of the prop; hx,hy: where the baby's head peeks out; k: size (nearer is bigger)
 const SPOTS = [
-  { x: 76, y: 458, prop: 'jar', hx: 24, hy: -50 },
-  { x: 184, y: 424, prop: 'sacks', hx: 6, hy: -52 },
-  { x: 290, y: 456, prop: 'pots', hx: -8, hy: -48 },
-  { x: 122, y: 548, prop: 'basket', hx: 2, hy: -38 },
-  { x: 246, y: 552, prop: 'cushions', hx: 4, hy: -46 },
+  { x: 70, y: 452, prop: 'jar', hx: 30, hy: -66, k: 1.05 },
+  { x: 184, y: 420, prop: 'sacks', hx: 0, hy: -66, k: 1.0 },
+  { x: 294, y: 452, prop: 'pots', hx: -12, hy: -60, k: 1.05 },
+  { x: 116, y: 556, prop: 'basket', hx: 0, hy: -46, k: 1.25 },
+  { x: 254, y: 560, prop: 'cushions', hx: 0, hy: -66, k: 1.25 },
 ];
 const BLANKETS = ['#f6c7d3', '#bfe0f2', '#f7e2a0', '#cfe8c0', '#e2cdf2'];
 
@@ -19,17 +20,17 @@ MG.add({
     s.puffs = []; s.cheerT = -9; s.motes = Array.from({ length: 18 }, (_, i) => ({ x: Math.random() * W, y: 330 + Math.random() * 260, p: Math.random() * 6 }));
   },
   down(g, x, y) {
-    const s = g.s; let best = null, bd = 50;
-    for (const b of s.babies) { if (b.tucked) continue; const d = Math.hypot(x - (b.x + b.hx), y - (b.y + b.hy)); if (d < bd) { bd = d; best = b; } }
+    const s = g.s; let best = null, bd = 56;
+    for (const b of s.babies) { if (b.tucked) continue; const d = Math.hypot(x - (b.x + b.hx * b.k), y - (b.y + b.hy * b.k)); if (d < bd) { bd = d; best = b; } }
     if (best) {
       best.tucked = true; best.tuckT = g.t; s.cheerT = g.t; g.sfx('pop'); g.sfx('coo');
-      g.burst(best.x + best.hx, best.y + best.hy, [best.blanket, '#fff6d8', '#ffd45a'], 12, 120);
+      g.burst(best.x + best.hx * best.k, best.y + best.hy * best.k, [best.blanket, '#fff6d8', '#ffd45a'], 12, 120);
       if (s.babies.every(b => b.tucked)) { g.win(); g.sfx('sparkle'); }
     } else { s.puffs.push({ x, y, t: g.t }); g.sfx('tap'); }
   },
   auto(g, dt, synth) { // test bot: tap one baby every 0.35 s
     const s = g.s, k = Math.floor((g.t - 0.5) / 0.35); if (g.t < 0.5 || k === s.last) return; s.last = k;
-    const b = s.babies.find(b => !b.tucked); if (b) { synth('down', b.x + b.hx, b.y + b.hy); synth('up', b.x + b.hx, b.y + b.hy); }
+    const b = s.babies.find(b => !b.tucked); if (b) { const x = b.x + b.hx * b.k, y = b.y + b.hy * b.k; synth('down', x, y); synth('up', x, y); }
   },
   draw(g, c) {
     const s = g.s, t = g.t;
@@ -44,7 +45,7 @@ MG.add({
     const fail = g.result === 'fail', win = g.result === 'win';
     const prog = fail ? g.doneAt / g.dur : Math.min(1.6, t / g.dur);
     const gx = -50 + 230 * prog;
-    drawGuard(c, gx, 322, 1.12, t, fail ? 'look' : 'walk', fail ? t - g.doneAt : 0);
+    drawGuard(c, gx, 314, 1.3, t, fail ? 'look' : 'walk', fail ? t - g.doneAt : 0);
     c.drawImage(g.bake('exodus_hide_front', o => paintFront(o)), 0, 0, W, H);
     // vines over the wall sway a touch
     for (let i = 0; i < 9; i++) { const vx = 214 + i * 13, sw = Math.sin(t * 1.6 + i) * 1.5; c.fillStyle = ['#e0508a', '#f07aa8', '#c83a78'][i % 3]; c.beginPath(); c.arc(vx + sw, 306 + (i % 3) * 7, 4.2, 0, 7); c.fill(); }
@@ -53,8 +54,8 @@ MG.add({
     const list = s.babies.slice().sort((a, b) => a.y - b.y);
     for (const b of list) drawSpot(c, b, t, s, fail);
     // midwives
-    P.person(c, 40, 626, 1.12, { skin: P.SKIN[2], robe: P.CLOTH.rose, stripe: P.CLOTH.cream, hairStyle: 'bun', hair: P.HAIR[1], expr: win || cheer ? 'laugh' : fail ? 'surprised' : 'happy', arms: win || cheer ? 'cheer' : 'pray', t, phase: 1 });
-    P.person(c, 322, 628, 1.12, { skin: P.SKIN[3], robe: P.CLOTH.indigo, stripe: P.CLOTH.saffron, hairStyle: 'curly', hair: P.HAIR[0], expr: win || cheer ? 'laugh' : fail ? 'surprised' : 'happy', arms: win || cheer ? 'cheer' : 'hold', t, phase: 3, facing: -1, hold: win || cheer ? null : (cc, hx, hy) => { cc.fillStyle = '#bfe0f2'; cc.strokeStyle = '#6a8aa8'; cc.lineWidth = 1.2; roundRect(cc, hx - 11, hy - 6, 22, 12, 4); cc.fill(); cc.stroke(); cc.fillStyle = '#f6c7d3'; cc.fillRect(hx - 11, hy - 1, 22, 3); } });
+    P.person(c, 36, 606, 1.15, { skin: P.SKIN[2], robe: P.CLOTH.rose, stripe: P.CLOTH.cream, hairStyle: 'bun', hair: P.HAIR[1], expr: win || cheer ? 'laugh' : fail ? 'surprised' : 'happy', arms: win || cheer ? 'cheer' : 'pray', t, phase: 1 });
+    P.person(c, 326, 606, 1.15, { skin: P.SKIN[3], robe: P.CLOTH.indigo, stripe: P.CLOTH.saffron, hairStyle: 'curly', hair: P.HAIR[0], expr: win || cheer ? 'laugh' : fail ? 'surprised' : 'happy', arms: win || cheer ? 'cheer' : 'hold', t, phase: 3, facing: -1, hold: win || cheer ? null : (cc, hx, hy) => { cc.fillStyle = '#bfe0f2'; cc.strokeStyle = '#6a8aa8'; cc.lineWidth = 1.2; roundRect(cc, hx - 11, hy - 6, 22, 12, 4); cc.fill(); cc.stroke(); cc.fillStyle = '#f6c7d3'; cc.fillRect(hx - 11, hy - 1, 22, 3); } });
     // dust motes in the low sun
     c.save(); c.globalCompositeOperation = 'screen';
     for (const m of s.motes) { const a = 0.35 + 0.35 * Math.sin(t * 2 + m.p); c.fillStyle = `rgba(255,226,160,${a})`; c.beginPath(); c.arc(m.x + Math.sin(t * 0.7 + m.p) * 10, m.y - (t * 6 + m.p * 20) % 40, 1.4, 0, 7); c.fill(); }
@@ -111,8 +112,8 @@ function paintFront(o) {
 
 // ---------- props ----------
 function shadow(c, x, y, w) { c.fillStyle = 'rgba(90,40,60,0.22)'; c.beginPath(); c.ellipse(x - w * 0.25, y, w, w * 0.18, 0, 0, 7); c.fill(); }
-function drawProp(c, kind, x, y) {
-  c.save(); c.translate(x, y);
+function drawProp(c, kind, x, y, k = 1) {
+  c.save(); c.translate(x, y); c.scale(k, k);
   if (kind === 'jar') {
     shadow(c, 0, 0, 30);
     const g = c.createRadialGradient(-10, -46, 3, 0, -34, 36); g.addColorStop(0, '#f2a878'); g.addColorStop(0.6, '#c8683e'); g.addColorStop(1, '#8a3e26');
@@ -164,36 +165,36 @@ function drawBabyHead(c, x, y, r, b, expr) {
   c.strokeStyle = b.hair; c.lineWidth = 2.2; c.lineCap = 'round'; c.beginPath(); c.moveTo(x - 1, y - r + 1); c.quadraticCurveTo(x - 5, y - r - 8, x + 3, y - r - 7); c.quadraticCurveTo(x + 7, y - r - 3, x + 2, y - r - 1); c.stroke();
 }
 function drawSpot(c, b, t, s, fail) {
-  const hx = b.x + b.hx, hy = b.y + b.hy, r = 13;
+  const hx = b.x + b.hx * b.k, hy = b.y + b.hy * b.k, r = 17 * b.k;
   if (!b.tucked) {
     // soft pulsing glow says "tap me"
     const p = 0.5 + 0.5 * Math.sin(t * 6 + b.phase);
-    const gl = c.createRadialGradient(hx, hy, 2, hx, hy, 34); gl.addColorStop(0, `rgba(255,240,190,${0.45 + 0.25 * p})`); gl.addColorStop(1, 'rgba(255,240,190,0)'); c.fillStyle = gl; c.beginPath(); c.arc(hx, hy, 34, 0, 7); c.fill();
-    const peek = Math.sin(t * 3.2 + b.phase) * 3 - (fail ? 4 : 0), tilt = Math.sin(t * 2.4 + b.phase) * 0.18;
+    const gr = r * 2.6, gl = c.createRadialGradient(hx, hy, 2, hx, hy, gr); gl.addColorStop(0, `rgba(255,244,200,${0.55 + 0.3 * p})`); gl.addColorStop(0.5, `rgba(255,226,150,${0.25 + 0.15 * p})`); gl.addColorStop(1, 'rgba(255,226,150,0)'); c.fillStyle = gl; c.beginPath(); c.arc(hx, hy, gr, 0, 7); c.fill();
+    const peek = Math.sin(t * 3.2 + b.phase) * 4 - (fail ? 5 : 0), tilt = Math.sin(t * 2.4 + b.phase) * 0.18;
     c.save(); c.translate(hx, hy + peek); c.rotate(tilt);
     // little body in a tunic, mostly hidden behind the prop
-    c.fillStyle = '#f2e6cf'; c.beginPath(); c.ellipse(0, r + 8, r * 0.85, 11, 0, 0, 7); c.fill();
+    c.fillStyle = '#f2e6cf'; c.strokeStyle = '#c8b090'; c.lineWidth = 1.2; c.beginPath(); c.ellipse(0, r + 10, r * 0.85, r * 0.75, 0, 0, 7); c.fill(); c.stroke();
     drawBabyHead(c, 0, 0, r, b, Math.sin(t * 5 + b.phase) > -0.2 ? 'laugh' : 'wow');
     c.restore();
-    drawProp(c, b.prop, b.x, b.y);
+    drawProp(c, b.prop, b.x, b.y, b.k);
     // tiny hands on the edge
     c.fillStyle = b.skin; c.strokeStyle = P.shade(b.skin, -0.4); c.lineWidth = 1.1;
-    for (const sx of [-1, 1]) { c.beginPath(); c.arc(hx + sx * 10, hy + r + 4 + peek * 0.3, 4, 0, 7); c.fill(); c.stroke(); }
+    for (const sx of [-1, 1]) { c.beginPath(); c.arc(hx + sx * r * 0.75, hy + r * 1.05 + peek * 0.5, r * 0.28, 0, 7); c.fill(); c.stroke(); }
     // giggle squiggles
     c.strokeStyle = 'rgba(255,250,235,0.95)'; c.lineWidth = 2; c.lineCap = 'round';
     for (let i = 0; i < 2; i++) { const a = (t * 2.5 + b.phase + i * 0.5) % 1, sx = b.facing * (r + 6 + a * 10); c.globalAlpha = 1 - a; c.beginPath(); c.arc(hx + sx, hy - 8 - a * 10 + i * 8, 4, b.facing > 0 ? -0.9 : 2.2, b.facing > 0 ? 0.9 : 4.0); c.stroke(); }
     c.globalAlpha = 1;
   } else {
     // tucked in: snuggled under a blanket, fast asleep
-    const q = Math.min(1, (t - b.tuckT) / 0.3), sink = 7 * q;
+    const q = Math.min(1, (t - b.tuckT) / 0.3), sink = r * 0.35 * q;
     c.save(); c.translate(hx, hy + sink);
     drawBabyHead(c, 0, 0, r, b, q > 0.5 ? 'sleep' : 'wow');
     c.restore();
-    drawProp(c, b.prop, b.x, b.y);
-    const bw = 24, by = hy + sink + r * 0.45 + (1 - q) * 14;
+    drawProp(c, b.prop, b.x, b.y, b.k);
+    const bw = r * 1.6, by = hy + sink + r * 0.45 + (1 - q) * 14;
     const bg = c.createLinearGradient(0, by - 6, 0, by + 16); bg.addColorStop(0, P.shade(b.blanket, 0.25)); bg.addColorStop(1, P.shade(b.blanket, -0.15));
     c.fillStyle = bg; c.strokeStyle = P.shade(b.blanket, -0.45); c.lineWidth = 1.4;
-    c.beginPath(); c.moveTo(hx - bw, by + 16); c.quadraticCurveTo(hx - bw - 4, by, hx - bw * 0.6, by - 3); c.quadraticCurveTo(hx, by + 3, hx + bw * 0.6, by - 3); c.quadraticCurveTo(hx + bw + 4, by, hx + bw, by + 16); c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); c.moveTo(hx - bw, by + r * 1.1); c.quadraticCurveTo(hx - bw - 5, by, hx - bw * 0.6, by - 3); c.quadraticCurveTo(hx, by + 4, hx + bw * 0.6, by - 3); c.quadraticCurveTo(hx + bw + 5, by, hx + bw, by + r * 1.1); c.closePath(); c.fill(); c.stroke();
     c.strokeStyle = P.rgba('#ffffff', 0.7); c.setLineDash([2, 3]); c.beginPath(); c.moveTo(hx - bw * 0.6, by + 1); c.quadraticCurveTo(hx, by + 7, hx + bw * 0.6, by + 1); c.stroke(); c.setLineDash([]);
     // floating sleepy z's and a heart
     const a = ((t - b.tuckT) * 0.8 + b.phase) % 1;
@@ -219,6 +220,8 @@ function drawGuard(c, x, y, s, t, mode, ft) {
   if (!look) { // sleepy z's
     const a = (t * 0.9) % 1; c.save(); c.globalAlpha = 1 - a; c.strokeStyle = '#ffffff'; c.lineWidth = 2; c.lineJoin = 'round'; const zx = x + 20 + a * 10, zy = hy - 20 - a * 20, zs = 4 + a * 3; c.beginPath(); c.moveTo(zx - zs, zy - zs); c.lineTo(zx + zs, zy - zs); c.lineTo(zx - zs, zy + zs); c.lineTo(zx + zs, zy + zs); c.stroke(); c.restore();
   } else { // a startled sweat drop
+    c.save(); c.strokeStyle = '#fff6dc'; c.lineWidth = 3; c.lineCap = 'round'; const e = Math.min(1, ft * 5);
+    for (let i = -1; i <= 1; i++) { const a = -Math.PI / 2 + i * 0.5; c.beginPath(); c.moveTo(x + Math.cos(a) * 30, hy - 10 + Math.sin(a) * 30); c.lineTo(x + Math.cos(a) * (30 + 12 * e), hy - 10 + Math.sin(a) * (30 + 12 * e)); c.stroke(); } c.restore();
     c.fillStyle = '#bfe8ff'; c.beginPath(); c.moveTo(x + 18, hy - 18); c.quadraticCurveTo(x + 24, hy - 8, x + 18, hy - 5); c.quadraticCurveTo(x + 12, hy - 8, x + 18, hy - 18); c.fill();
   }
 }
