@@ -57,7 +57,7 @@ function paintCell(o) {
 
 MG.add({
   id: 'sing', stage: 'acts', cmd: 'SING!', hint: 'tap', time: 6, mood: 'night', winText: 'Free!',
-  card: { title: 'Songs at midnight', ref: 'Acts 16:16–34', kind: 'Story', text: 'Paul and Silas were locked in jail in Philippi, but at midnight they were praying and singing hymns while the other prisoners listened. An earthquake shook the doors open and the chains fell off; nobody ran away, the jailer was not harmed, and he took them home, washed their wounds and shared a meal with his whole family.', ask: 'When you feel scared or sad, what song or prayer could you sing?' },
+  card: { title: 'Songs at midnight', ref: 'Acts 16:25–34', kind: 'Song', text: 'Paul and Silas were locked in jail in Philippi, but at midnight they prayed and sang hymns while the other prisoners listened. An earthquake shook the doors open and the chains fell off, but nobody ran away, and the jailer took them to his home, cared for them and shared a meal with his whole family.', ask: 'When you feel scared or sad, what song or prayer could help you?' },
   init(g) {
     const s = g.s; s.meter = 0; s.need = [5, 7, 9][g.level]; s.notes = []; s.next = 0.15; s.freeT = -9; s.pops = []; s.sung = -9; s.k = 0;
     s.rate = [0.48, 0.38, 0.32][g.level] / g.speed; s.rise = [62, 82, 100][g.level] * g.speed;

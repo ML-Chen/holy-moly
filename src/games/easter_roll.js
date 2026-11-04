@@ -77,7 +77,7 @@ function paintGarden(o) {
 
 MG.add({
   id: 'roll', stage: 'easter', cmd: 'ROLL!', hint: 'swipe', time: 5, mood: 'bright', winText: 'He is risen!',
-  card: { title: 'The empty tomb', ref: 'Matthew 28:1–10; John 20:1–18', kind: 'Story', text: 'Very early on Sunday morning, Mary Magdalene and other women came to the garden where Jesus had been buried. The huge stone had been rolled away, the tomb was empty, and an angel told them, "He is not here. He has been raised!"', ask: 'Easter is about new life. Where can you see new life starting around you right now?' },
+  card: { title: 'The empty tomb', ref: 'Luke 24:1–12', kind: 'Story', text: 'Very early on Sunday morning, Mary Magdalene, Joanna and other women brought spices to the garden tomb where Jesus had been buried, and found the heavy stone already rolled away. Two shining messengers asked them, "Why are you looking for the living among the dead? He is not here; he has risen!"', ask: 'Easter is about new life. Where can you see new life starting around you right now?' },
   init(g) {
     const s = g.s; s.need = [1, 2, 3][g.level]; s.prog = 0; s.target = 0; s.ang = 0; s.winT = -9; s.lastSwipe = -9; s.wobble = 0; s.notes = []; s.petals = [];
     const r = P.rng(Math.floor(Math.random() * 999) + 1);
