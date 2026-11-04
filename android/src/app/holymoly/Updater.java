@@ -34,10 +34,13 @@ final class Updater {
         "https://ml-chen.github.io/holy-moly/",
     };
 
-    static final long MIN_CHECK_INTERVAL_MS = 3L * 60 * 60 * 1000; // at most every 3 hours
+    static final long MIN_CHECK_INTERVAL_MS = 10L * 60 * 1000; // at most every 10 minutes
     private static volatile boolean running = false;
 
-    static void checkInBackground(final Activity activity) {
+    static void checkInBackground(final Activity activity) { checkInBackground(activity, null); }
+
+    /** Checks for a newer signed build; when one is installed, runs onInstalled on the UI thread (or shows a toast). */
+    static void checkInBackground(final Activity activity, final Runnable onInstalled) {
         final Context context = activity.getApplicationContext();
         SharedPreferences prefs = context.getSharedPreferences("updater", Context.MODE_PRIVATE);
         long now = System.currentTimeMillis();
@@ -50,7 +53,8 @@ final class Updater {
                     if (checkOnce(context)) {
                         activity.runOnUiThread(new Runnable() {
                             @Override public void run() {
-                                Toast.makeText(context, "New games are ready! They start next time you open Holy Moly!", Toast.LENGTH_LONG).show();
+                                if (onInstalled != null) onInstalled.run();
+                                else Toast.makeText(context, "New games are ready! They start next time you open Holy Moly!", Toast.LENGTH_LONG).show();
                             }
                         });
                     }

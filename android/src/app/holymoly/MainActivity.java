@@ -109,15 +109,37 @@ public class MainActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new GameClient());
         web.loadUrl(GAME_URL);
+        createdAt = android.os.SystemClock.elapsedRealtime();
 
-        Updater.checkInBackground(this);
+        Updater.checkInBackground(this, onUpdate);
+    }
+
+    // Auto-update: a newer signed build found within the first 30 seconds (usually still on the title screen) loads
+    // straight away; one found later loads the next time the player comes back to the app, so a game in progress is
+    // never interrupted. Saves live in localStorage and survive the reload.
+    private long createdAt = 0;
+    private boolean pendingReload = false;
+    private final Runnable onUpdate = new Runnable() {
+        @Override public void run() {
+            if (web == null) return;
+            if (android.os.SystemClock.elapsedRealtime() - createdAt < 30000) reloadForUpdate();
+            else pendingReload = true;
+        }
+    };
+    private void reloadForUpdate() {
+        pendingReload = false;
+        if (web == null) return;
+        web.clearCache(false);
+        web.loadUrl(GAME_URL);
+        android.widget.Toast.makeText(this, "Holy Moly! updated with new games", android.widget.Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if (web != null) web.onResume();
-        Updater.checkInBackground(this); // at most every few hours; see Updater.MIN_CHECK_INTERVAL_MS
+        if (pendingReload) reloadForUpdate();
+        Updater.checkInBackground(this, onUpdate); // at most every 10 minutes; see Updater.MIN_CHECK_INTERVAL_MS
     }
 
     @Override
