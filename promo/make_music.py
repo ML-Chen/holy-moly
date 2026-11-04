@@ -4,7 +4,7 @@ Usage: ELEVENLABS_API_KEY=... python3 promo/make_music.py OUT_DIR [seconds]
 Runs in GitHub Actions (.github/workflows/promo-music.yml), where the key is the repository secret ELEVENLABS_API_KEY.
 Writes OUT_DIR/<name>.mp3 for each prompt below. The video cuts on 1.6 s bars, so every prompt asks for 150 BPM
 (four beats at 150 BPM last exactly 1.6 s)."""
-import json, os, sys, urllib.request, urllib.error
+import json, os, sys, time, urllib.request, urllib.error
 out = sys.argv[1]; secs = float(sys.argv[2]) if len(sys.argv) > 2 else 62
 key = os.environ.get('ELEVENLABS_API_KEY', '').strip()
 if not key: sys.exit('ELEVENLABS_API_KEY is not set')
@@ -25,12 +25,18 @@ for name, prompt in PROMPTS.items():
     body = json.dumps({'prompt': prompt, 'music_length_ms': int(secs * 1000), 'model_id': 'music_v1'}).encode()
     req = urllib.request.Request('https://api.elevenlabs.io/v1/music?output_format=mp3_44100_192', data=body, method='POST',
                                  headers={'xi-api-key': key, 'content-type': 'application/json', 'accept': 'audio/mpeg'})
-    try:
-        with urllib.request.urlopen(req, timeout=600) as r: data = r.read()
-    except urllib.error.HTTPError as e:
-        print(f'{name}: ElevenLabs returned {e.code}: {e.read()[:300]!r}'); continue
-    except Exception as e:
-        print(f'{name}: request failed: {str(e)[:300]}'); continue
+    data = None
+    for attempt in range(4):   # ElevenLabs allows only 2 requests at a time per account; wait and retry on 429
+        try:
+            with urllib.request.urlopen(req, timeout=600) as r: data = r.read()
+            break
+        except urllib.error.HTTPError as e:
+            print(f'{name}: ElevenLabs returned {e.code}: {e.read()[:300]!r}')
+            if e.code != 429: break
+            time.sleep(20 * (attempt + 1))
+        except Exception as e:
+            print(f'{name}: request failed: {str(e)[:300]}'); break
+    if data is None: continue
     if len(data) < 100000: print(f'{name}: too little audio ({len(data)} bytes)'); continue
     open(os.path.join(out, name + '.mp3'), 'wb').write(data); ok += 1
     print(f'{name}: {len(data)} bytes')

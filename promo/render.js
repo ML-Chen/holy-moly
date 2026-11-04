@@ -55,21 +55,47 @@ const CAMS = [[1.0, 1.08, 0, 0, 0, -0.01], [1.1, 1.02, -0.02, 0.01, 0, 0], [1.03
   await p.evaluate(() => {
     const cvs = document.getElementById('game'); cvs.style.transformOrigin = '50% 50%';
     backIcon = () => {};   // no back button in the video
+    hintIcon = () => {};   // the game's "which input" hint looks like a cursor in a video, so it is hidden; a finger shows the bot's real touches instead
+    // the finger: record every touch the test bot makes, and draw a fingertip that glides to it
+    const F = window.PRF = {x: 180, y: 420, tx: 180, ty: 420, down: false, last: -9, ripples: [], streak: null};
+    const orig = synth;
+    synth = (type, ...a) => {
+      const now = PR.t;
+      if (type === 'down' || type === 'move') { F.tx = a[0]; F.ty = a[1]; if (type === 'down') { if (now - F.last > 0.5) { F.x = a[0]; F.y = a[1]; } F.down = true; F.ripples.push({x: a[0], y: a[1], t: now}); } F.last = now; }
+      if (type === 'up') { F.down = false; F.last = now; }
+      if (type === 'swipe' && now - F.last > 0.2) { const x0 = 180 - a[0] / 2, y0 = 430 - a[1] / 2; F.streak = {x0, y0, x1: x0 + a[0], y1: y0 + a[1], t: now}; F.last = now; }
+      return orig(type, ...a);
+    };
+    window.PRfinger = (c, t) => {
+      F.x += (F.tx - F.x) * 0.45; F.y += (F.ty - F.y) * 0.45;
+      for (const r of F.ripples) { const k = (t - r.t) / 0.45; if (k < 0 || k > 1) continue; c.strokeStyle = `rgba(255,255,255,${0.85 * (1 - k)})`; c.lineWidth = 3; c.beginPath(); c.arc(r.x, r.y, 10 + k * 26, 0, 7); c.stroke(); }
+      F.ripples = F.ripples.filter(r => t - r.t < 0.5);
+      if (F.streak) { const k = (t - F.streak.t) / 0.35; if (k > 1.4) F.streak = null; else { const e = Math.min(1, k), sx = F.streak.x0 + (F.streak.x1 - F.streak.x0) * e, sy = F.streak.y0 + (F.streak.y1 - F.streak.y0) * e;
+        c.strokeStyle = `rgba(255,255,255,${0.6 * Math.max(0, 1.4 - k)})`; c.lineWidth = 10; c.lineCap = 'round'; c.beginPath(); c.moveTo(F.streak.x0, F.streak.y0); c.lineTo(sx, sy); c.stroke(); F.x = sx; F.y = sy; F.tx = sx; F.ty = sy; F.last = t; } }
+      const vis = F.down ? 1 : Math.max(0, 1 - (t - F.last) / 0.6); if (vis <= 0) return;
+      c.save(); c.globalAlpha = vis; const r = F.down ? 15 : 18;
+      c.fillStyle = 'rgba(30,10,40,0.25)'; c.beginPath(); c.arc(F.x + 2, F.y + 4, r, 0, 7); c.fill();
+      c.fillStyle = 'rgba(255,255,255,0.72)'; c.strokeStyle = 'rgba(58,22,64,0.85)'; c.lineWidth = 2.5; c.beginPath(); c.arc(F.x, F.y, r, 0, 7); c.fill(); c.stroke();
+      c.restore();
+    };
     window.PR = {
       setup(s) {
         FX.clear(); window.HM_AUTO = false; CV.list = null; run = null;
-        if (s.mg) { const d = MG.byId[s.mg]; startRun(d.stage); run.list = [d]; run.i = 0; window.HM_AUTO = true; nextMicro(); A.call = () => 0; HM.step(Math.round(s.from * 30), 1 / 30); }
+        if (s.mg) { const d = MG.byId[s.mg]; startRun(d.stage); run.list = [d]; run.i = 0; window.HM_AUTO = true; nextMicro(); A.call = () => 0; HM.step(Math.round(s.from * 30), 1 / 30); PRF.down = false; PRF.last = -9; PRF.ripples = []; }
         else if (s.phase) { startRun(s.stage); run.i = s.phase === 'speedup' ? 8 : 6; run.loaves = s.phase === 'grace' ? 0 : 3; run.speed = 1.5; run.bpm = 140; run.phase = s.phase; run.pt = 0; run.lostLoafAt = -9; }
         else if (s.card) { scene = 'cards'; Object.keys(MG.byId).forEach(k => SAVE.d.cards[k] = 1); openCards([MG.byId[s.card]], 0, 'reward'); }
         else if (s.title || s.end) { scene = 'promo'; }
-        PR.s = s; PR.t = 0;
+        PR.s = s; PR.t = 0; Object.assign(PRF, {down: false, last: -9, ripples: [], streak: null});
       },
       frame(dt, cam, D) {
         const s = PR.s; PR.t += dt; const k = Math.min(1, PR.t / D), e = k * k * (3 - 2 * k);
         const sc = cam[0] + (cam[1] - cam[0]) * e, x = (cam[2] + (cam[3] - cam[2]) * e) * 100, y = (cam[4] + (cam[5] - cam[4]) * e) * 100;
         cvs.style.transform = `translate(${x}%,${y}%) scale(${sc})`;
+        // a microgame shot holds on its winning moment instead of moving on to the loaves screen
+        if (s.mg && run && run.g && run.g.done) { run.phase = 'play'; run.g.doneAt = Math.max(run.g.doneAt, run.g.t - 0.5); }
         HM.step(1, dt);
         if (s.title || s.end) PR.paint(s, PR.t);
+        else if (s.mg) { const c = cvs.getContext('2d'); c.setTransform(scale * DPR, 0, 0, scale * DPR, offX * DPR, offY * DPR); PRfinger(c, PR.t); }
       },
       paint(s, t) {
         const c = document.getElementById('game').getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0);
