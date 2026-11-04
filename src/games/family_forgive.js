@@ -81,7 +81,7 @@ function joseph(c, x, y, s, t, o) {
 function heart(c, x, y, r) { c.beginPath(); c.moveTo(x, y + r * 0.9); c.bezierCurveTo(x - r * 1.6, y - r * 0.2, x - r * 0.7, y - r * 1.3, x, y - r * 0.45); c.bezierCurveTo(x + r * 0.7, y - r * 1.3, x + r * 1.6, y - r * 0.2, x, y + r * 0.9); c.fill(); }
 MG.add({
   id: 'forgive', stage: 'family', cmd: 'FORGIVE!', hint: 'drag', time: 5, mood: 'bright', winText: 'Family!',
-  card: { title: 'Joseph forgives', ref: 'Genesis 37–45', kind: 'Ancient story', text: 'Genesis tells how Joseph\'s jealous brothers sold him as a slave, but years later he became a great ruler in Egypt. When his brothers came there hungry, Joseph told them who he was. He forgave them and hugged them, crying for joy.', ask: 'Is there someone you need to forgive, or someone you need to say sorry to?' },
+  card: { title: 'Joseph forgives', ref: 'Genesis 37–45', kind: 'Ancient story', text: 'Genesis tells how Joseph\'s jealous brothers sold him as a slave, but years later he became a great ruler in Egypt. When his brothers came there hungry, Joseph told them who he was. He forgave them and hugged them, crying for joy.', note: 'Joseph\'s story is one of the old family stories Israel told for many generations before writing it down. It shows how forgiveness can heal a family that has been badly hurt.', ask: 'Is there someone you need to forgive, or someone you need to say sorry to?' },
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level];
     const skins = [P.SKIN[1], P.SKIN[3], P.SKIN[2], P.SKIN[0], P.SKIN[3]], robes = [[P.CLOTH.rust, P.CLOTH.cream], [P.CLOTH.olive, P.CLOTH.sand], [P.CLOTH.indigo, P.CLOTH.saffron], [P.CLOTH.teal, P.CLOTH.cream], [P.CLOTH.brown, P.CLOTH.terracotta]];

@@ -57,7 +57,7 @@ function paintCell(o) {
 
 MG.add({
   id: 'sing', stage: 'acts', cmd: 'SING!', hint: 'tap', time: 6, mood: 'night', winText: 'Free!',
-  card: { title: 'Songs at midnight', ref: 'Acts 16:25–34', kind: 'Acts story', text: 'The book of Acts tells how Paul and Silas were locked in a jail in Philippi. At midnight they prayed and sang hymns, and an earthquake shook the doors open. Nobody ran away, and the jailer took them home and shared a meal with his family.', ask: 'When you feel scared or sad, what song or prayer could help you?' },
+  card: { title: 'Songs at midnight', ref: 'Acts 16:25–34', kind: 'Acts story', text: 'The book of Acts tells how Paul and Silas were locked in a jail in Philippi. At midnight they prayed and sang hymns, and an earthquake shook the doors open. Nobody ran away, and the jailer took them home and shared a meal with his family.', note: 'Some Christians think God sent the earthquake as a miracle, and others read the story more as a picture of God\'s care. Either way, a jailer and his prisoners end up sharing a meal as friends.', ask: 'When you feel scared or sad, what song or prayer could help you?' },
   init(g) {
     const s = g.s; s.meter = 0; s.need = [5, 7, 9][g.level]; s.notes = []; s.next = 0.15; s.freeT = -9; s.pops = []; s.sung = -9; s.k = 0;
     s.rate = [0.48, 0.38, 0.32][g.level] / g.speed; s.rise = [62, 82, 100][g.level] * g.speed;

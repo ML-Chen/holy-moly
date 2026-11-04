@@ -93,7 +93,7 @@ function paintNear(o) { // the garden path in the foreground, one 360-wide tile
 
 MG.add({
   id: 'tell', stage: 'easter', cmd: 'TELL!', hint: 'mash', time: 5, mood: 'bright', winText: 'Good news!',
-  card: { title: 'Mary tells the news', ref: 'John 20:1–18', kind: 'Gospel story', text: 'The Gospel of John tells how Mary Magdalene found the tomb empty and stood outside it, crying. Then she met Jesus, alive again, and he called her by her name. She ran to his friends and became the first person to tell the Easter news: "I have seen the Lord!"', ask: 'What is some good news you could share with someone today?' },
+  card: { title: 'Mary tells the news', ref: 'John 20:1–18', kind: 'Gospel story', text: 'The Gospel of John tells how Mary Magdalene found the tomb empty and stood outside it, crying. Then she met Jesus, alive again, and he called her by her name. She ran to his friends and became the first person to tell the Easter news: "I have seen the Lord!"', note: 'John\'s Gospel, written later than the others, tells Easter in its own way. Christians have always proclaimed that Jesus is risen, and though they understand it in different ways, all say God\'s love is stronger than death.', ask: 'What is some good news you could share with someone today?' },
   init(g) {
     const s = g.s; s.dist = 0; s.vel = 0; s.goal = [560, 760, 900][g.level]; s.phase = 0; s.flowers = []; s.arrived = -9; s.taps = 0; s.drag = [2.6, 2.4, 2.2][g.level];
   },

@@ -20,7 +20,7 @@ function plan(level, speed) {
 
 MG.add({
   id: 'listen', stage: 'brave', cmd: 'LISTEN!', hint: 'tap', time: 5.5, mood: 'storm', winText: 'Shh...',
-  card: { title: 'A gentle whisper', ref: '1 Kings 19:9–13', kind: 'Story', text: 'The first book of Kings tells how the prophet Elijah, tired and afraid, hid in a cave on a mountain. A great wind, an earthquake and a fire rushed past, but God was not in them. Then Elijah heard a gentle whisper and knew God was there.', ask: 'When is it hard for you to be quiet? Where could you find a quiet moment to listen this week?' },
+  card: { title: 'A gentle whisper', ref: '1 Kings 19:9–13', kind: 'Story', text: 'The first book of Kings tells how the prophet Elijah, tired and afraid, hid in a cave on a mountain. A great wind, an earthquake and a fire rushed past, but God was not in them. Then Elijah heard a gentle whisper and knew God was there.', note: 'Some read this as something that happened to Elijah, and others as a story that pictures how God meets people. Either way, it teaches that God can be found in quiet moments.', ask: 'When is it hard for you to be quiet? Where could you find a quiet moment to listen this week?' },
   init(g) {
     const s = g.s, p = plan(g.level, g.speed); s.ev = p.ev; s.wt = p.whisper; s.heard = -1; s.wrong = [];
     s.leaves = Array.from({ length: 26 }, () => ({ x: Math.random() * W, y: 120 + Math.random() * 400, ph: Math.random() * 6, col: ['#8ab04a', '#c8a040', '#e07a3a', '#6a9a3a'][Math.floor(Math.random() * 4)] }));

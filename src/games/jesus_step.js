@@ -35,7 +35,7 @@ function fishingBoat(c, x, y, s, t) {
 
 MG.add({
   id: 'step', stage: 'jesus', cmd: 'STEP!', hint: 'drag', time: 5, mood: 'storm', winOnTimeout: true, winText: 'Peter!', failText: 'Splash!',
-  card: { title: 'Walking on the water', ref: 'Matthew 14:22–33', kind: 'Gospel story', text: 'Matthew\'s Gospel tells how, one windy night, the disciples saw Jesus walking toward their boat on the water. Peter stepped out to meet him, but the wind scared him and he began to sink. Jesus reached out his hand right away and caught him.', ask: 'When do you feel scared or wobbly inside? Who reaches out a hand to help you?' },
+  card: { title: 'Walking on the water', ref: 'Matthew 14:22–33', kind: 'Gospel story', text: 'Matthew\'s Gospel tells how, one windy night, the disciples saw Jesus walking toward their boat on the water. Peter stepped out to meet him, but the wind scared him and he began to sink. Jesus reached out his hand right away and caught him.', note: 'Some Christians believe Jesus really walked on the water, and others read this as a story that shows what God is like. Either way, it says Jesus reaches out to people who are afraid.', ask: 'When do you feel scared or wobbly inside? Who reaches out a hand to help you?' },
   init(g) {
     const s = g.s; s.tilt = 0; s.vel = 0; s.push = 0; s.dx = 0; s.drag = null; s.prog = 0; s.sinkT = -1; s.ph = Math.random() * 6;
     s.wob = [0.95, 1.15, 1.4][g.level]; s.inst = [-0.5, 2.2, 3.0][g.level]; s.splash = []; s.jx = 254; // level 0 rights itself; higher levels topple unless you steer

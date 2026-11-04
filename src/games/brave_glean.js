@@ -48,7 +48,7 @@ function bird(c, x, y, s, t) { c.save(); c.translate(x, y); c.scale(s, s); const
 
 MG.add({
   id: 'glean', stage: 'brave', cmd: 'GLEAN!', hint: 'tap', time: 5, mood: 'bright', winText: 'Plenty!',
-  card: { title: 'Ruth in the barley field', ref: 'Ruth 1–2', kind: 'Story', text: 'The book of Ruth tells how Ruth, a woman from Moab, stayed with her mother-in-law Naomi after both their husbands died. Ruth gathered leftover barley in the field of a man named Boaz, who told his workers to leave extra for her on purpose.', ask: 'Boaz quietly made sure a newcomer had enough. How could you quietly help someone new?' },
+  card: { title: 'Ruth in the barley field', ref: 'Ruth 1–2', kind: 'Story', text: 'The book of Ruth tells how Ruth, a woman from Moab, stayed with her mother-in-law Naomi after both their husbands died. Ruth gathered leftover barley in the field of a man named Boaz, who told his workers to leave extra for her on purpose.', note: 'Ruth is a short story, and scholars do not know whether Ruth was a real person. It was told to show that a foreigner from Moab belongs among God\'s people, and it says she became King David\'s great-grandmother.', ask: 'Boaz quietly made sure a newcomer had enough. How could you quietly help someone new?' },
   init(g) {
     const s = g.s, need = [4, 5, 7][g.level], drops = [1, 2, 3][g.level];
     s.need = need; s.got = 0; s.stalks = []; s.flying = []; s.misses = []; s.dropAt = [];

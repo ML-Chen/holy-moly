@@ -133,7 +133,7 @@ function paintRoom(o) {
 
 MG.add({
   id: 'wash', stage: 'easter', cmd: 'WASH!', hint: 'drag', time: 6, mood: 'night', winText: 'Clean!',
-  card: { title: 'Jesus washes feet', ref: 'John 13:1–17', kind: 'Gospel story', text: 'The Gospel of John tells how, on his last night with his friends, Jesus knelt with a bowl of water and a towel and washed their dusty feet. This was a job usually left to servants. Then he asked his friends to serve each other in the same way.', ask: 'What is a helpful job at home that nobody likes doing? Could you do it for someone this week?' },
+  card: { title: 'Jesus washes feet', ref: 'John 13:1–17', kind: 'Gospel story', text: 'The Gospel of John tells how, on his last night with his friends, Jesus knelt with a bowl of water and a towel and washed their dusty feet. This was a job usually left to servants. Then he asked his friends to serve each other in the same way.', note: 'John\'s Gospel was written later than the others and tells Jesus\'s story in its own way. Only John tells about the foot washing, and many churches still wash feet on the Thursday before Easter.', ask: 'What is a helpful job at home that nobody likes doing? Could you do it for someone this week?' },
   init(g) {
     const s = g.s, n = [2, 3, 4][g.level], xs = XS[n];
     const others = OTHERS.slice().sort(() => Math.random() - 0.5), peterAt = Math.floor(Math.random() * n);

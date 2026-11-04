@@ -50,7 +50,7 @@ function house(c, x, y, s, lit, t, glow) {
 
 MG.add({
   id: 'follow', stage: 'baby', cmd: 'FOLLOW!', hint: 'drag', time: 6, mood: 'night', winText: 'Found him!',
-  card: { title: 'Following the star', ref: 'Matthew 2:1–12', kind: 'Gospel story', text: 'Matthew\'s Gospel tells how wise men from the East saw a new star and traveled a long way to find the child it announced. The star led them to Jesus and his mother Mary. They knelt with joy and gave him gold, frankincense and myrrh.', ask: 'The wise men were strangers from another country. How can you welcome someone who is new?' },
+  card: { title: 'Following the star', ref: 'Matthew 2:1–12', kind: 'Gospel story', text: 'Matthew\'s Gospel tells how wise men from the East saw a new star and traveled a long way to find the child it announced. The star led them to Jesus and his mother Mary. They knelt with joy and gave him gold, frankincense and myrrh.', note: 'Only Matthew\'s Gospel tells about the star and the wise men, and Luke tells Jesus\'s birth in a different way. Many scholars think Matthew told it to show that Jesus is a king for people of every nation.', ask: 'The wise men were strangers from another country. How can you welcome someone who is new?' },
   init(g) {
     const s = g.s, left = Math.random() < 0.5; s.dir = left ? -1 : 1;
     const dist = [200, 230, 250][g.level];

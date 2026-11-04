@@ -60,7 +60,7 @@ function lantern(c, x, y, t, ph) {
 
 MG.add({
   id: 'knock', stage: 'baby', cmd: 'KNOCK!', hint: 'tap', time: 5.5, mood: 'night', winText: 'Welcome!',
-  card: { title: 'No room at the inn', ref: 'Luke 2:1–7', kind: 'Gospel story', text: 'The Gospel of Luke tells how Mary and Joseph traveled to Bethlehem, where there was no room for them in the guest room. Jesus was born there. Mary wrapped him in cloth and laid him in a manger, the box animals eat from.', ask: 'There was no room for Jesus\'s family. Who could you make room for, at your table or in your games?' },
+  card: { title: 'No room at the inn', ref: 'Luke 2:1–7', kind: 'Gospel story', text: 'The Gospel of Luke tells how Mary and Joseph traveled to Bethlehem, where there was no room for them in the guest room. Jesus was born there. Mary wrapped him in cloth and laid him in a manger, the box animals eat from.', note: 'Only Luke\'s Gospel tells about the manger and the shepherds, and Matthew tells Jesus\'s birth in a different way. Many scholars think Luke told it to show that Jesus came for poor and ordinary people.', ask: 'There was no room for Jesus\'s family. Who could you make room for, at your table or in your games?' },
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level];
     const idx = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5).slice(0, n);

@@ -43,7 +43,7 @@ function lightBeing(c, x, y, s, lean, t, o) {
 }
 MG.add({
   id: 'wrestle', stage: 'family', cmd: 'WRESTLE!', hint: 'mash', time: 5.5, mood: 'night', winText: 'Blessed!', failText: 'Zzz...',
-  card: { title: 'Wrestling until dawn', ref: 'Genesis 32', kind: 'Ancient story', text: 'Genesis tells how, the night before Jacob met his brother Esau again, a mysterious stranger wrestled with him by a river until morning. Jacob held on and asked for a blessing. The stranger gave him a new name, Israel, and Jacob walked away limping but blessed.', ask: 'When something feels hard, who helps you hold on and keep trying?' },
+  card: { title: 'Wrestling until dawn', ref: 'Genesis 32', kind: 'Ancient story', text: 'Genesis tells how, the night before Jacob met his brother Esau again, a mysterious stranger wrestled with him by a river until morning. Jacob held on and asked for a blessing. The stranger gave him a new name, Israel, and Jacob walked away limping but blessed.', note: 'This mysterious old story is about the ancestor Israel was named after. It shows that people can struggle with God, hold on, and still be blessed.', ask: 'When something feels hard, who helps you hold on and keep trying?' },
   init(g) { const s = g.s; s.p = 0.55; s.dawn = 0; s.puffs = []; s.bot = 0; s.tapT = -1; s.endDawn = 0; },
   down(g) { const s = g.s; s.p = Math.min(1, s.p + 0.085); s.tapT = g.t; s.puffs.push({ x: 180 + (Math.random() - 0.5) * 60, t: g.t, d: Math.random() < 0.5 ? -1 : 1 }); if (s.puffs.length > 20) s.puffs.shift(); g.sfx(Math.random() < 0.5 ? 'thud' : 'stomp'); },
   update(g, dt) {

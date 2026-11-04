@@ -12,7 +12,7 @@ const BLANKETS = ['#f6c7d3', '#bfe0f2', '#f7e2a0', '#cfe8c0', '#e2cdf2'];
 
 MG.add({
   id: 'hide', stage: 'exodus', cmd: 'HIDE!', hint: 'tap', time: 5.5, mood: 'desert', winText: 'Safe!',
-  card: { title: 'The brave midwives', ref: 'Exodus 1:15–21', kind: 'Ancient story', text: 'The book of Exodus tells how Pharaoh, the king of Egypt, gave a cruel order to harm the Hebrew baby boys. Two midwives, Shiphrah and Puah, honored God more than the king, so they refused and kept the babies safe.', ask: 'Shiphrah and Puah protected babies who could not speak up. Who could you stand up for?' },
+  card: { title: 'The brave midwives', ref: 'Exodus 1:15–21', kind: 'Ancient story', text: 'The book of Exodus tells how Pharaoh, the king of Egypt, gave a cruel order to harm the Hebrew baby boys. Two midwives, Shiphrah and Puah, honored God more than the king, so they refused and kept the babies safe.', note: 'The Exodus stories are about Israel\'s beginnings and were written down long afterward. This one remembers two brave women who said no to a cruel king to protect children.', ask: 'Shiphrah and Puah protected babies who could not speak up. Who could you stand up for?' },
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level];
     const order = SPOTS.map((_, i) => i).sort(() => Math.random() - 0.5).slice(0, n);

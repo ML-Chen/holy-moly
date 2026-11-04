@@ -3,7 +3,7 @@ const BKY = 540;            // basket bottom
 const HEAP = 110;            // heap height in px at fill = 1
 MG.add({
   id: 'gather', stage: 'exodus', cmd: 'GATHER!', hint: 'drag', time: 6, mood: 'desert', winText: 'Enough!', failText: 'Yuck!',
-  card: { title: 'Bread from heaven', ref: 'Exodus 16', kind: 'Ancient story', text: 'The book of Exodus tells how God sent flakes of food called manna to the people in the desert every morning. Each family gathered what it needed, and there was always enough. Food they tried to save for the next day went bad.', ask: 'What do you have more than enough of? How could your family share some of it?' },
+  card: { title: 'Bread from heaven', ref: 'Exodus 16', kind: 'Ancient story', text: 'The book of Exodus tells how God sent flakes of food called manna to the people in the desert every morning. Each family gathered what it needed, and there was always enough. Food they tried to save for the next day went bad.', note: 'Israel told this desert story for many generations. Some read the manna as a real miracle and others as a picture of God\'s care, and it teaches that there is enough when people share.', ask: 'What do you have more than enough of? How could your family share some of it?' },
   init(g) {
     const s = g.s, L = g.level;
     s.band = [[0.48, 0.88], [0.56, 0.84], [0.62, 0.82]][L];

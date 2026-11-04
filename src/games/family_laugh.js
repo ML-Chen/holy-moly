@@ -87,7 +87,7 @@ function feather(c, x, y, a) {
 }
 MG.add({
   id: 'laugh', stage: 'family', cmd: 'LAUGH!', hint: 'mash', time: 5, mood: 'bright', winText: 'Ha ha!',
-  card: { title: 'Sarah laughs', ref: 'Genesis 18 and 21', kind: 'Ancient story', text: 'Genesis tells how three visitors came to Abraham\'s tent and said that Sarah would have a baby, even though she was very old. Sarah laughed because it sounded impossible. A year later she held her baby Isaac, whose name means "he laughs."', ask: 'What is something that made your whole family laugh together?' },
+  card: { title: 'Sarah laughs', ref: 'Genesis 18 and 21', kind: 'Ancient story', text: 'Genesis tells how three visitors came to Abraham\'s tent and said that Sarah would have a baby, even though she was very old. Sarah laughed because it sounded impossible. A year later she held her baby Isaac, whose name means "he laughs."', note: 'Israel told this story about its first family for many generations before writing it down. Sarah\'s laugh shows that God can bring joy when something seems impossible.', ask: 'What is something that made your whole family laugh together?' },
   init(g) { const s = g.s; s.need = [6, 9, 12][g.level]; s.gig = 0; s.show = 0; s.hits = []; s.hearts = []; s.feather = null; s.bot = 0; s.burstT = -1; s.misses = []; },
   down(g, x, y) {
     const s = g.s, hy = SY - 70 * SS;
