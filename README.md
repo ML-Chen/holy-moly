@@ -21,3 +21,6 @@ See `CLAUDE.md` for the module map and `docs/MICROGAMES.md` for how to add a mic
 - All art is drawn in code by `src/paint.js`.
 - Music: "Lanternbrook" and "Hilltop Dash" from `music-lab/` in this repository.
 - Fonts: Fredoka and Nunito (SIL Open Font License; see `src/OFL-*.txt`).
+
+## Android app
+`android/` wraps the same page in a small Android app that plays offline and updates itself with signed builds from GitHub Pages. GitHub Actions builds the APK (`.github/workflows/android.yml`) and publishes the web game plus the signed update (`.github/workflows/publish.yml`). One-time key setup, releases and installing on a phone: [docs/ANDROID.md](docs/ANDROID.md).

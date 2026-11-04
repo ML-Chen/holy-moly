@@ -1,0 +1,107 @@
+# Builds the Android app (APK) on GitHub's servers, signs it with the release keystore, and keeps it as a download.
+#
+# Start it in either of two ways (only people with write access to this repository can do either):
+# - Actions > "Build Android APK" > Run workflow. Leave "release" empty to only build (the APK is under the run's
+#   Artifacts), or type a tag such as android-v1.0 to also publish a GitHub Release with the APK attached.
+# - Push a tag that starts with android-v (for example: git tag android-v1.0 && git push origin android-v1.0).
+#
+# Secrets it needs (Settings > Secrets and variables > Actions; see docs/ANDROID.md for how to make them):
+#   HOLYMOLY_UPDATE_KEY         PEM private key for signed game updates; the app gets only its public half
+#   HOLYMOLY_KEYSTORE_B64       the release keystore (holymoly-release.jks), base64-encoded, key alias "holymoly"
+#   HOLYMOLY_KEYSTORE_PASSWORD  the keystore password (also used as the key password)
+#
+# Third-party code: only actions/checkout and actions/upload-artifact, pinned to exact commits. The Android SDK
+# and JDK 17 are the ones preinstalled on GitHub's ubuntu-latest runners.
+name: Build Android APK
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Also publish a GitHub Release with this tag (for example android-v1.0). Leave empty to only build.'
+        required: false
+        default: ''
+  push:
+    tags: ['android-v*']
+permissions:
+  contents: write
+concurrency:
+  group: android-apk
+  cancel-in-progress: false
+jobs:
+  apk:
+    if: github.repository == 'ML-Chen/holy-moly'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0 # the version numbers are commit times of src/ and android/
+
+      - name: Check that the secrets are set
+        env:
+          HOLYMOLY_UPDATE_KEY: ${{ secrets.HOLYMOLY_UPDATE_KEY }}
+          HOLYMOLY_KEYSTORE_B64: ${{ secrets.HOLYMOLY_KEYSTORE_B64 }}
+          HOLYMOLY_KEYSTORE_PASSWORD: ${{ secrets.HOLYMOLY_KEYSTORE_PASSWORD }}
+        run: |
+          missing=0
+          for name in HOLYMOLY_UPDATE_KEY HOLYMOLY_KEYSTORE_B64 HOLYMOLY_KEYSTORE_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error title=Missing secret::The repository secret $name is not set. Add it under Settings > Secrets and variables > Actions (see docs/ANDROID.md)."
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Find the Android SDK and JDK 17
+        run: |
+          sdk="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          [ -d "$sdk" ] || { echo "::error::No Android SDK found on this runner (ANDROID_HOME is empty)"; exit 1; }
+          echo "ANDROID_HOME=$sdk" >> "$GITHUB_ENV"
+          jdk="${JAVA_HOME_17_X64:-$JAVA_HOME}"
+          [ -x "$jdk/bin/javac" ] || { echo "::error::No JDK 17 found on this runner (JAVA_HOME_17_X64 is empty)"; exit 1; }
+          echo "JAVA_HOME=$jdk" >> "$GITHUB_ENV"
+          echo "$jdk/bin" >> "$GITHUB_PATH"
+          echo "build-tools installed: $(ls "$sdk/build-tools" | tr '\n' ' ')"
+          echo "platforms installed:   $(ls "$sdk/platforms" | tr '\n' ' ')"
+
+      - name: Build the single-file game
+        run: python3 src/build.py dist/holymoly.html
+
+      - name: Build and sign the APK
+        env:
+          HOLYMOLY_UPDATE_KEY: ${{ secrets.HOLYMOLY_UPDATE_KEY }}
+          HOLYMOLY_KEYSTORE_B64: ${{ secrets.HOLYMOLY_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.HOLYMOLY_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: holymoly
+        run: |
+          export ANDROID_KEYSTORE="$RUNNER_TEMP/holymoly-release.jks"
+          printf '%s' "$HOLYMOLY_KEYSTORE_B64" | tr -d ' \r\n' | base64 -d > "$ANDROID_KEYSTORE" \
+            || { echo "::error::HOLYMOLY_KEYSTORE_B64 is not valid base64 (see docs/ANDROID.md)"; exit 1; }
+          keytool -list -keystore "$ANDROID_KEYSTORE" -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias holymoly >/dev/null \
+            || { echo "::error::Could not open the keystore with HOLYMOLY_KEYSTORE_PASSWORD, or it has no key with the alias holymoly"; rm -f "$ANDROID_KEYSTORE"; exit 1; }
+          bash android/build.sh dist/holymoly.html dist/holymoly.apk
+          rm -f "$ANDROID_KEYSTORE"
+          sha256sum dist/holymoly.apk | tee dist/holymoly.apk.sha256
+
+      - name: Keep the APK as a download on this run
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: holymoly-apk
+          path: |
+            dist/holymoly.apk
+            dist/holymoly.apk.sha256
+          if-no-files-found: error
+
+      - name: Publish a GitHub Release with the APK
+        if: startsWith(github.ref, 'refs/tags/android-v') || startsWith(inputs.release, 'android-v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release }}
+        run: |
+          case "$TAG" in android-v[0-9]*) ;; *) echo "::error::Release tags must look like android-v1.0 (got '$TAG')"; exit 1 ;; esac
+          notes="Holy Moly! for Android. Download holymoly.apk below and open it on the phone. SHA-256: $(cut -d' ' -f1 dist/holymoly.apk.sha256)"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/holymoly.apk --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$TAG" dist/holymoly.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "Holy Moly! for Android ${TAG#android-v}" --notes "$notes" --latest
+          fi
