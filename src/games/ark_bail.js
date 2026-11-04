@@ -71,7 +71,7 @@ MG.add({
     const s = g.s;
     for (const l of s.leaks) if (!l.open && g.t >= l.at && !g.done) { l.open = true; l.openT = g.t; g.sfx('splash'); }
     const open = s.leaks.filter(l => l.open && !l.plugged).length;
-    if (!g.done) { s.h += open * s.r * dt; if (s.h >= 1) { s.h = 1; g.fail(); g.sfx('splashbig'); g.sfx('laugh'); } }
+    if (!g.done) { s.h += open * s.r * dt; if (s.h >= 1) { s.h = 1; g.fail(); g.sfx('splashbig'); g.sfx('laugh'); for (const x of [112, 212, 278]) g.burst(x, FLOOR, ['#bfe8ff', '#ffffff', '#7fc8e8'], 10, 170); } }
     else if (g.result === 'win') s.h = Math.max(0, s.h - dt * 0.4);
     s.flash = Math.max(0, s.flash - dt * 2.6);
     if (g.t > s.nextFlash) { s.flash = 1; s.nextFlash = g.t + 1.6 + Math.random() * 1.4; g.sfx('thunder'); }
