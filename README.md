@@ -17,6 +17,14 @@ python3 tools/shots.py /tmp/hm-shots    # screenshot every screen
 ```
 See `CLAUDE.md` for the module map and `docs/MICROGAMES.md` for how to add a microgame.
 
+## Tests
+```
+python3 tests/run.py            # everything, about 4 minutes
+python3 tests/run.py --quick    # skip the slow passes, about 1.5 minutes
+python3 tests/run.py --only cards
+```
+The tests build the page and play it in headless Chromium. They check every screen, the audio, winning and losing runs, grace, speed-ups, saving, that text fits on cards and in speech bubbles, the card viewer, the art and every microgame. They need `pip install playwright pillow`, `python3 -m playwright install chromium` and node. GitHub runs them on every push and pull request (`.github/workflows/test.yml`).
+
 ## Credits
 - All art is drawn in code by `src/paint.js`.
 - Music: "Lanternbrook" and "Hilltop Dash" from `music-lab/` in this repository.

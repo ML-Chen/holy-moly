@@ -221,6 +221,13 @@ function input(type, x, y, vx, vy) {
     if (type === 'down' && hit(x, y, 336, 24, 44, 44) && run.phase !== 'over') { goStages(); A.sfx('click'); }
     return;
   }
+  // Cards grid: open a card on a tap (finger up without much movement), so a drag that starts on a card scrolls the grid
+  if (scene === 'cards') {
+    if (type === 'down') { ui.tapStart = { x, y }; if (hit(x, y, 30, 30, 44, 44)) { scene = 'title'; A.sfx('click'); } return; }
+    if (type === 'up' && ui.tapStart) { const st = ui.tapStart; ui.tapStart = null; if (Math.hypot(x - st.x, y - st.y) > 10) return;
+      const owned = storyOrder().filter(d => SAVE.d.cards[d.id]); for (const c of cardTiles()) if (hit(x, y, c.x, c.y, c.w, c.h) && SAVE.d.cards[c.def.id]) { openCards(owned, owned.indexOf(c.def), 'browse'); A.sfx('chime'); return; } }
+    return;
+  }
   if (type !== 'down') return;
   if (scene === 'title') { if (hit(x, y, 180, 300, 180, 60)) { press('play'); A.sfx('pop'); A.music('title'); setTimeout(goStages, 120); } else if (hit(x, y, 180, 372, 150, 46)) { press('cards'); A.sfx('click'); setTimeout(() => { scene = 'cards'; }, 120); } else if (hit(x, y, 330, 30, 44, 44)) toggleMute(); else A.music('title'); return; }
   if (scene === 'stages') {
@@ -228,10 +235,6 @@ function input(type, x, y, vx, vy) {
     if (hit(x, y, 330, 30, 44, 44)) { toggleMute(); return; }
     for (const tile of stageTiles()) if (hit(x, y, tile.x, tile.y, tile.w, tile.h) && tile.count > 0) { press(tile.id); A.sfx('pop'); setTimeout(() => startRun(tile.id), 140); return; }
     return;
-  }
-  if (scene === 'cards') {
-    if (hit(x, y, 30, 30, 44, 44)) { scene = 'title'; A.sfx('click'); return; }
-    const owned = storyOrder().filter(d => SAVE.d.cards[d.id]); for (const c of cardTiles()) if (hit(x, y, c.x, c.y, c.w, c.h) && SAVE.d.cards[c.def.id]) { openCards(owned, owned.indexOf(c.def), 'browse'); A.sfx('chime'); return; }
   }
 }
 function hit(x, y, cx, cy, w, h) { return Math.abs(x - cx) <= w / 2 && Math.abs(y - cy) <= h / 2; }
@@ -540,11 +543,14 @@ window.HM = {
   list() { return MG.list.map(d => ({ id: d.id, stage: d.stage, cmd: d.cmd, hint: d.hint, time: d.time, winOnTimeout: !!d.winOnTimeout, hasAuto: !!d.auto, card: !!(d.card && d.card.text) })); },
   goto(s, arg) { if (s === 'run') startRun(arg); else { scene = s; } },
   step(n = 1, dt = 1 / 60) { for (let i = 0; i < n; i++) { T += dt; step(dt); } render(); },
-  state() { return { scene, phase: run && run.phase, i: run && run.i, loaves: run && run.loaves }; },
+  state() { return { scene, phase: run && run.phase, i: run && run.i, loaves: run && run.loaves, speed: run && run.speed, graceUsed: run && run.graceUsed, won: run && run.won, cleared: run && run.cleared, cardViewerOpen: !!CV.list }; },
+  resetSave() { try { localStorage.removeItem(SAVE.key); } catch (e) { } SAVE.d = SAVE.merge({}, {}); },
+  ready: false,
   synth,
 };
 
 function boot() {
   SAVE.load(); if (SAVE.d.muted) A.call('mute', true); SAVE.connect();
   if (!testMode) requestAnimationFrame(frame); else render();
+  HM.ready = true;
 }
