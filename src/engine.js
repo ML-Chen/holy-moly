@@ -360,12 +360,32 @@ function frame(now) {
   step(dt); render(); requestAnimationFrame(frame);
 }
 function step(dt) { if (scene === 'run' && run) updateRun(dt); FX.update(dt); }
+// On phones taller or wider than 9:16, the bands around the game continue the scene: its edge rows are stretched outward and softly darkened.
 function render() {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#2a1830'; ctx.fillRect(0, 0, cv.width, cv.height);
+
   ctx.setTransform(scale * DPR, 0, 0, scale * DPR, offX * DPR, offY * DPR);
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
   if (scene === 'title') drawTitle(ctx, T); else if (scene === 'stages') drawStages(ctx, T); else if (scene === 'cards') drawCards(ctx, T); else if (scene === 'run' && run) drawRun(ctx, T);
   ctx.restore();
+  fillBands();
+}
+const bandStrip = document.createElement('canvas'); bandStrip.width = 40; bandStrip.height = 1; const bsx = bandStrip.getContext('2d');
+function strip(sx, sy, sw, sh, dx, dy, dw, dh) { bsx.clearRect(0, 0, 40, 1); bsx.drawImage(cv, sx, sy, sw, sh, 0, 0, 40, 1); ctx.drawImage(bandStrip, 0, 0, 40, 1, dx, dy, dw, dh); }
+function fillBands() {
+  const fx = Math.round(offX * DPR), fy = Math.round(offY * DPR), fw = Math.round(W * scale * DPR), fh = Math.round(H * scale * DPR), e = Math.max(2, Math.round(2 * DPR));
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.imageSmoothingEnabled = true;
+  try {
+    if (fy > 1) {
+      strip(fx, fy, fw, e * 3, fx, 0, fw, fy); strip(fx, fy + fh - e * 3, fw, e * 3, fx, fy + fh, fw, cv.height - fy - fh);
+      let g = ctx.createLinearGradient(0, 0, 0, fy); g.addColorStop(0, 'rgba(30,14,36,0.55)'); g.addColorStop(1, 'rgba(30,14,36,0.12)'); ctx.fillStyle = g; ctx.fillRect(0, 0, cv.width, fy);
+      g = ctx.createLinearGradient(0, fy + fh, 0, cv.height); g.addColorStop(0, 'rgba(30,14,36,0.12)'); g.addColorStop(1, 'rgba(30,14,36,0.55)'); ctx.fillStyle = g; ctx.fillRect(0, fy + fh, cv.width, cv.height - fy - fh);
+    }
+    if (fx > 1) {
+      ctx.drawImage(cv, fx, 0, e, cv.height, 0, 0, fx, cv.height); ctx.drawImage(cv, fx + fw - e, 0, e, cv.height, fx + fw, 0, cv.width - fx - fw, cv.height);
+      ctx.fillStyle = 'rgba(30,14,36,0.35)'; ctx.fillRect(0, 0, fx, cv.height); ctx.fillRect(fx + fw, 0, cv.width - fx - fw, cv.height);
+    }
+  } catch (err) { }
 }
 // card list scrolling (drag)
 let dragY = null; cv.addEventListener('pointerdown', e => { if (scene === 'cards' && !ui.cardOpen) dragY = toLogical(e)[1]; });
