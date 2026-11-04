@@ -3,8 +3,8 @@
 const CL = P.CLOTH, SK = P.SKIN, HR = P.HAIR;
 const SAUL = { x: 196, y: 396, s: 1.45 };
 const CLOUD = { x: 200, y: 196 };
-const LYRE = { x: 214, top: 432, bot: 572 };
-const STR = [156, 194, 232, 270];
+const LYRE = { x: 222, top: 446, bot: 578 };
+const STR = [168, 204, 240, 276];
 const PITCH = [1, 1.125, 1.26, 1.5];
 const PATTERNS = [[0, 1, 2, 3, 2, 1], [3, 2, 1, 0, 1, 2], [0, 2, 1, 3, 1, 2], [1, 2, 3, 2, 0, 1]];
 const eo = k => 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3);
@@ -36,6 +36,14 @@ function lamp(c, x, y, t, k) {
   const fl = c.createRadialGradient(x + 19, y - 9, 1, x + 19, y - 9, 8); fl.addColorStop(0, '#fffbe0'); fl.addColorStop(0.5, '#ffc04a'); fl.addColorStop(1, 'rgba(255,120,40,0)'); c.fillStyle = fl;
   c.beginPath(); c.moveTo(x + 15, y - 4); c.quadraticCurveTo(x + 18 + Math.sin(t * 11 + x) * 2, y - 18 * f, x + 20, y - 20 * f); c.quadraticCurveTo(x + 23, y - 10, x + 22, y - 4); c.closePath(); c.fill();
 }
+// Saul's thought-cloud: heavy slate-gray puffs that turn creamy and sunlit as k goes 0 → 1
+function thought(c, x, y, s, k, t) {
+  const puffs = [[-1.15, 0.2, 0.6], [-0.5, -0.25, 0.8], [0.35, -0.38, 0.9], [1.1, 0.05, 0.66], [0, 0.22, 0.86], [-0.9, 0.42, 0.5], [0.8, 0.45, 0.52]];
+  const lite = P.mix('#8a8aa6', '#fffaf0', k), mid = P.mix('#5e5e7e', '#ffe8d0', k), dark = P.mix('#3a3a58', '#f0b8c0', k), r0 = 40 * s;
+  c.save(); c.fillStyle = dark; for (const [dx, dy, r] of puffs) { c.beginPath(); c.arc(x + dx * r0, y + dy * r0 + 7 * s, r * r0, 0, 7); c.fill(); }
+  for (const [dx, dy, r] of puffs) { const px = x + dx * r0 + Math.sin(t * 1.4 + dx * 3) * 1.5, py = y + dy * r0, rr = r * r0; const g = c.createRadialGradient(px - rr * 0.3, py - rr * 0.45, rr * 0.1, px, py, rr); g.addColorStop(0, lite); g.addColorStop(0.65, mid); g.addColorStop(1, dark); c.fillStyle = g; c.beginPath(); c.arc(px, py - 2 * s, rr * 0.93, 0, 7); c.fill(); }
+  c.restore();
+}
 function note(c, x, y, s, col, rot = 0) {
   c.save(); c.translate(x, y); c.rotate(rot); c.scale(s, s); c.fillStyle = col; c.strokeStyle = col; c.lineWidth = 2.4; c.lineCap = 'round';
   c.beginPath(); c.ellipse(0, 0, 6, 4.4, -0.4, 0, 7); c.fill(); c.beginPath(); c.moveTo(5, -1); c.lineTo(5, -20); c.quadraticCurveTo(12, -14, 13, -8); c.stroke(); c.restore();
@@ -45,10 +53,10 @@ function lyre(c, s, t) {
   const x = LYRE.x, top = LYRE.top, bot = LYRE.bot, L = STR[0] - 20, R = STR[3] + 20;
   c.save(); c.fillStyle = 'rgba(30,10,30,0.3)'; c.beginPath(); c.ellipse(x, bot + 18, 96, 10, 0, 0, 7); c.fill();
   c.lineCap = 'round';
-  for (const [ax, dir] of [[L, -1], [R, 1]]) { c.strokeStyle = '#4a2a10'; c.lineWidth = 15; c.beginPath(); c.moveTo(ax - dir * 6, bot); c.bezierCurveTo(ax + dir * 26, bot - 60, ax - dir * 18, top + 30, ax + dir * 12, top - 22); c.stroke();
+  for (const [ax, dir] of [[L, -1], [R, 1]]) { c.strokeStyle = '#4a2a10'; c.lineWidth = 15; c.beginPath(); c.moveTo(ax - dir * 6, bot); c.bezierCurveTo(ax + dir * 34, bot - 50, ax + dir * 30, top + 24, ax + dir * 8, top - 24); c.stroke();
     const ag = c.createLinearGradient(ax - 20, top, ax + 20, bot); ag.addColorStop(0, '#e2a860'); ag.addColorStop(1, '#8a5424'); c.strokeStyle = ag; c.lineWidth = 11; c.stroke();
-    c.strokeStyle = 'rgba(255,240,200,0.45)'; c.lineWidth = 3; c.beginPath(); c.moveTo(ax - dir * 6 - 2, bot - 4); c.bezierCurveTo(ax + dir * 26 - 3, bot - 60, ax - dir * 18 - 3, top + 30, ax + dir * 12 - 2, top - 20); c.stroke();
-    c.fillStyle = '#f2c94c'; c.beginPath(); c.arc(ax + dir * 12, top - 22, 6, 0, 7); c.fill(); }
+    c.strokeStyle = 'rgba(255,240,200,0.45)'; c.lineWidth = 3; c.beginPath(); c.moveTo(ax - dir * 6 - 2, bot - 4); c.bezierCurveTo(ax + dir * 34 - 3, bot - 50, ax + dir * 30 - 3, top + 24, ax + dir * 8 - 2, top - 22); c.stroke();
+    c.fillStyle = '#f2c94c'; c.beginPath(); c.arc(ax + dir * 8, top - 24, 6, 0, 7); c.fill(); }
   // crossbar
   const cb = c.createLinearGradient(0, top - 12, 0, top + 4); cb.addColorStop(0, '#d89a50'); cb.addColorStop(1, '#7a4418'); c.fillStyle = cb; c.strokeStyle = '#4a2a10'; c.lineWidth = 2; roundRect(c, L - 18, top - 14, R - L + 36, 14, 7); c.fill(); c.stroke();
   c.fillStyle = '#f6d36a'; for (const sx of STR) { c.beginPath(); c.arc(sx, top - 7, 3.2, 0, 7); c.fill(); }
@@ -90,7 +98,7 @@ MG.add({
   },
   auto(g, dt, synth) {
     const s = g.s; if (!s.cur || g.t - s.cur.t < 0.25 || s.botFor === s.cur) return; s.botFor = s.cur;
-    const x = STR[s.cur.i] + 4; synth('down', x, 500); synth('up', x, 500);
+    const x = STR[s.cur.i] + 4; synth('down', x, 512); synth('up', x, 512);
   },
   draw(g, c) {
     const s = g.s, t = g.t, k = s.calm, won = s.winT >= 0;
@@ -137,18 +145,18 @@ MG.add({
     if (k > 0.05) { const sunk = eo((k - 0.05) / 0.95); c.save(); c.globalCompositeOperation = 'lighter'; const sg = c.createRadialGradient(cx + 30, cy - 20, 2, cx + 30, cy - 20, 110 * sunk + 10); sg.addColorStop(0, `rgba(255,220,120,${0.7 * sunk})`); sg.addColorStop(1, 'rgba(255,200,100,0)'); c.fillStyle = sg; c.beginPath(); c.arc(cx + 30, cy - 20, 120, 0, 7); c.fill(); c.restore();
       c.save(); c.translate(cx + 30, cy - 22); c.rotate(t * 0.5); c.fillStyle = `rgba(255,214,90,${sunk})`; for (let i = 0; i < 10; i++) { c.rotate(Math.PI / 5); c.beginPath(); c.moveTo(-4, -28 * sunk); c.lineTo(0, -44 * sunk); c.lineTo(4, -28 * sunk); c.fill(); } c.beginPath(); c.arc(0, 0, 26 * sunk, 0, 7); c.fill(); c.restore(); }
     if (won) { const q = eo((t - s.winT) / 0.6); c.save(); c.globalAlpha = q * 0.7; c.lineWidth = 6; ['#ff6a6a', '#ffb04a', '#ffe060', '#6ad08a', '#6ab0f0', '#a87ae0'].forEach((col, i) => { c.strokeStyle = col; c.beginPath(); c.arc(cx, cy + 90, 120 - i * 6, Math.PI * 1.08, Math.PI * (1.08 + 0.84 * q)); c.stroke(); }); c.restore(); }
-    P.cloud(c, cx, cy, 1.25, P.mix('#9a9ab4', '#fffaf0', k), P.mix('#4a4a6a', '#f0c0c8', k), 1);
+    thought(c, cx, cy, 1.25, k, t);
     if (k < 0.8) { c.save(); c.globalAlpha = 1 - k / 0.8; c.strokeStyle = 'rgba(190,200,240,0.7)'; c.lineWidth = 1.4; c.lineCap = 'round'; for (let i = 0; i < 8; i++) { const rx = cx - 40 + i * 11, ry = cy + 30 + ((t * 90 + i * 23) % 40); c.beginPath(); c.moveTo(rx, ry); c.lineTo(rx - 2, ry + 7); c.stroke(); }
       if (Math.sin(t * 3.1) > 0.85) { c.strokeStyle = '#fff6a0'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(cx - 6, cy + 18); c.lineTo(cx + 2, cy + 30); c.lineTo(cx - 4, cy + 32); c.lineTo(cx + 6, cy + 46); c.stroke(); }
       c.restore(); }
     // David, the shepherd boy, sitting by the lyre
-    seated(c, 64, 600, 1.15, { skin: SK[2], robe: CL.sky, stripe: CL.white, hairStyle: 'curly', hair: HR[2], child: true, expr: won ? 'laugh' : 'happy', arms: 'reach', t, phase: 1, bounce: 1.5 });
+    P.person(c, 64, 606, 1.4, { skin: SK[2], robe: CL.sky, stripe: CL.white, sash: CL.brown, hairStyle: 'curly', hair: HR[2], child: true, expr: won ? 'laugh' : 'happy', arms: 'reach', t, phase: 1, bounce: 1.5 });
     lyre(c, 1, t);
     // strings: the one to play glows and a shrinking ring shows the beat
     STR.forEach((sx, i) => {
       const lit = s.cur && s.cur.i === i, pq = (t - s.pluck[i]) / 0.5, wob = pq < 1 ? Math.sin(pq * 40) * 5 * (1 - pq) : 0;
       if (lit) { const a = (t - s.cur.t) / s.win; c.save(); c.globalCompositeOperation = 'lighter'; const gl = c.createLinearGradient(sx - 26, 0, sx + 26, 0); gl.addColorStop(0, 'rgba(255,220,120,0)'); gl.addColorStop(0.5, `rgba(255,220,120,${0.6 + 0.3 * Math.sin(t * 14)})`); gl.addColorStop(1, 'rgba(255,220,120,0)'); c.fillStyle = gl; c.fillRect(sx - 26, LYRE.top, 52, LYRE.bot - LYRE.top - 10); c.restore();
-        c.save(); c.strokeStyle = `rgba(255,246,200,${0.9 - a * 0.4})`; c.lineWidth = 3; c.beginPath(); c.arc(sx, 500, 44 - 26 * Math.min(1, a * 1.4), 0, 7); c.stroke(); c.restore();
+        c.save(); c.strokeStyle = `rgba(255,246,200,${0.9 - a * 0.4})`; c.lineWidth = 3; c.beginPath(); c.arc(sx, 512, 44 - 26 * Math.min(1, a * 1.4), 0, 7); c.stroke(); c.restore();
         note(c, sx + 2, LYRE.top - 30 + Math.sin(t * 8) * 3, 0.9, '#fff6c0'); }
       c.strokeStyle = lit ? '#fffbe0' : '#f0e0c0'; c.lineWidth = lit ? 3.4 : 2; c.beginPath(); c.moveTo(sx, LYRE.top); c.quadraticCurveTo(sx + wob, (LYRE.top + LYRE.bot) / 2, sx, LYRE.bot - 10); c.stroke();
     });
