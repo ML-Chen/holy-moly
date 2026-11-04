@@ -20,14 +20,14 @@ const C = P.CLOTH, SK = P.SKIN, HR = P.HAIR;
 const STAGES = [
   { id: 'creation', name: 'In the Beginning', hostName: 'Eve', mood: 'bright', sky: ['#7ec8e8', '#bfe6f0', '#fff1c8'], ground: ['#9acb6a', '#6a9a48'], host: { skin: SK[3], robe: C.green, stripe: C.cream, hairStyle: 'long', hair: HR[0] }, line: 'Let us make a world!' },
   { id: 'ark', name: 'The Ark', hostName: 'Noah', mood: 'storm', sky: ['#4a4a78', '#8a7aa0', '#f2c08a'], ground: ['#7f9a5a', '#55704a'], host: { skin: SK[2], robe: C.olive, stripe: C.cream, beard: '#e8e2da', hair: HR[5], head: 'wrap' }, line: 'Two by two, everybody in!' },
-  { id: 'family', name: 'Family Stories', hostName: 'Sarah', mood: 'desert', sky: ['#2a2860', '#8a4a7a', '#f2a066'], ground: ['#e0a060', '#b0703a'], host: { skin: SK[2], robe: C.plum, stripe: C.gold, head: 'scarf', headCol: C.cream }, line: 'God keeps every promise!' },
-  { id: 'exodus', name: 'Freedom Road', hostName: 'Miriam', mood: 'desert', sky: ['#3a8ab0', '#9ad0d8', '#ffe2a8'], ground: ['#e8c88a', '#c09a5a'], host: { skin: SK[3], robe: C.teal, stripe: C.saffron, head: 'scarf', headCol: C.saffron }, line: 'Grab your tambourine. We are free!' },
+  { id: 'family', name: 'Family Stories', hostName: 'Sarah', mood: 'desert', sky: ['#2a2860', '#8a4a7a', '#f2a066'], ground: ['#e0a060', '#b0703a'], host: { skin: SK[1], robe: C.plum, stripe: C.gold, hairStyle: 'bun', hair: HR[5] }, line: 'God keeps every promise!' },
+  { id: 'exodus', name: 'Freedom Road', hostName: 'Miriam', mood: 'desert', sky: ['#3a8ab0', '#9ad0d8', '#ffe2a8'], ground: ['#e8c88a', '#c09a5a'], host: { skin: SK[2], robe: C.teal, stripe: C.saffron, hairStyle: 'curly', hair: HR[0] }, line: 'Grab your tambourine. We are free!' },
   { id: 'brave', name: 'Brave Hearts', hostName: 'Deborah', mood: 'bright', sky: ['#5a9ad8', '#a8d4e8', '#fff0c8'], ground: ['#b8c86a', '#8a9a48'], host: { skin: SK[3], robe: C.indigo, stripe: C.gold, hairStyle: 'bun', hair: HR[0] }, line: 'Be brave and be kind!' },
   { id: 'exile', name: 'Far From Home', hostName: 'Esther', mood: 'night', sky: ['#1a1a48', '#4a3a7a', '#c07a8a'], ground: ['#8a6a8a', '#5a4a6a'], host: { skin: SK[3], robe: C.royal, stripe: C.gold, hairStyle: 'long', hair: HR[0], head: 'crown' }, line: 'Speak up for your people!' },
   { id: 'baby', name: 'A Baby Is Born', hostName: 'Mary', mood: 'night', sky: ['#101438', '#2a2a6a', '#5a4a8a'], ground: ['#7a6a5a', '#4a3a3a'], host: { skin: SK[3], robe: C.indigo, stripe: C.sky, head: 'scarf', headCol: C.sky }, line: 'Good news for everyone!' },
   { id: 'jesus', name: 'Jesus on the Move', hostName: 'Peter', mood: 'sea', sky: ['#5aa8d8', '#9ad0e8', '#fbe8c0'], ground: ['#a8c86a', '#7aa04a'], host: { skin: SK[2], robe: C.sky, stripe: C.brown, beard: true, hair: HR[0], hairStyle: 'curly' }, line: 'Follow me. Let us go!' },
   { id: 'parables', name: 'Story Time', hostName: 'the Samaritan', mood: 'bright', sky: ['#f0a070', '#f8c890', '#fff0d0'], ground: ['#c8b070', '#9a8048'], host: { skin: SK[1], robe: C.rust, stripe: C.cream, head: 'wrap', headCol: C.saffron, beard: true, hair: HR[2] }, line: 'Jesus told the best stories!' },
-  { id: 'easter', name: 'Easter', hostName: 'Mary Magdalene', mood: 'bright', sky: ['#f7a8a0', '#ffd8b0', '#fff6dc'], ground: ['#9acb6a', '#6a9a48'], host: { skin: SK[2], robe: C.rose, stripe: C.cream, head: 'scarf', headCol: C.terracotta }, line: 'He is risen! Run and tell!' },
+  { id: 'easter', name: 'Easter', hostName: 'Mary Magdalene', mood: 'bright', sky: ['#f7a8a0', '#ffd8b0', '#fff6dc'], ground: ['#9acb6a', '#6a9a48'], host: { skin: SK[2], robe: C.rose, stripe: C.cream, hairStyle: 'long', hair: HR[2] }, line: 'He is risen! Run and tell!' },
   { id: 'acts', name: 'Wind and Fire', hostName: 'Lydia', mood: 'party', sky: ['#4a7ad8', '#8ab0f0', '#ffe0b0'], ground: ['#d0a870', '#a07a48'], host: { skin: SK[1], robe: C.plum, stripe: C.gold, hairStyle: 'bun', hair: HR[0] }, line: 'Everyone is welcome here!' },
   { id: 'new', name: 'All Things New', hostName: 'everyone', mood: 'party', sky: ['#ffb0c8', '#ffd8a8', '#fff8e0'], ground: ['#a8d870', '#70a848'], host: { skin: SK[5], robe: C.saffron, stripe: C.rust, hairStyle: 'short', hair: HR[3], child: true }, line: 'The gates are always open!' },
 ];
@@ -55,6 +55,8 @@ cv.addEventListener('pointerdown', e => { e.preventDefault(); A.call('unlock'); 
 cv.addEventListener('pointermove', e => { const [x, y] = toLogical(e); ptr.x = x; ptr.y = y; if (ptr.down) { ptr.path.push([x, y, performance.now()]); if (ptr.path.length > 12) ptr.path.shift(); input('move', x, y); } });
 const endPtr = e => { if (!ptr.down) return; const [x, y] = toLogical(e); ptr.down = false; input('up', x, y); const dt = performance.now() - ptr.st, dx = x - ptr.sx, dy = y - ptr.sy; if (Math.hypot(dx, dy) > 28 && dt < 650) input('swipe', dx, dy, dx / Math.max(dt, 1) * 1000, dy / Math.max(dt, 1) * 1000); };
 cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
+// iPhones and iPads only allow audio to start on a touch-up or tap, not on touch-down
+for (const ev of ['touchend', 'click', 'pointerup', 'keydown']) window.addEventListener(ev, () => A.call('unlock'), { passive: true });
 document.addEventListener('visibilitychange', () => { if (document.hidden) A.call('pause'); else A.call('resume'); });
 
 // ---------------- shared effects (particles, floating text, shake) ----------------
@@ -109,12 +111,12 @@ const RUN_LEN = 12, SPEED_EVERY = 4;
 let scene = 'title', run = null, ui = { pressed: null, cardOpen: null, cardScroll: 0 }, T = 0;
 const testMode = /[?&]test=1/.test(location.search);
 
-function makeG(def, level, speed) {
+function makeG(def, level, speed, silent) {
   const g = {
     W, H, def, level, speed, t: 0, dur: def.time / (1 + (speed - 1) * 0.55), s: {}, done: false, result: null, doneAt: 0, ptr,
-    win() { if (this.done) return; this.done = true; this.result = 'win'; this.doneAt = this.t; A.sfx('chime'); },
-    fail() { if (this.done) return; this.done = true; this.result = 'fail'; this.doneAt = this.t; A.sfx('fail'); },
-    sfx: (n, o) => A.sfx(n, o), burst: (...a) => FX.burst(...a), float: (...a) => FX.float(...a), shake: (...a) => FX.shake(...a),
+    win() { if (this.done) return; this.done = true; this.result = 'win'; this.doneAt = this.t; if (!silent) A.sfx('chime'); },
+    fail() { if (this.done) return; this.done = true; this.result = 'fail'; this.doneAt = this.t; if (!silent) A.sfx('fail'); },
+    sfx: (n, o) => silent ? 0 : A.sfx(n, o), burst: (...a) => FX.burst(...a), float: (...a) => FX.float(...a), shake: (...a) => FX.shake(...a),
     rand: Math.random, bake, left() { return Math.max(0, this.dur - this.t); },
   };
   return g;
@@ -154,7 +156,8 @@ function finishRun(cleared) {
   run.phase = 'over'; run.pt = 0; run.won = cleared; A.beat(false);
   const id = run.stage.id;
   if (id === 'remix') SAVE.d.remixBest = Math.max(SAVE.d.remixBest, run.cleared); else { SAVE.d.best[id] = Math.max(SAVE.d.best[id] || 0, run.cleared); if (cleared) SAVE.d.cleared[id] = 1; }
-  SAVE.save(); A.jingle(cleared ? 'cleared' : 'gameover', 1); setTimeout(() => { if (scene === 'run' && run && run.phase === 'over') A.music('results'); }, 2600);
+  SAVE.save(); A.jingle(cleared ? 'cleared' : 'gameover', 1);
+  if (run.newCards.length) { const ids = run.newCards.slice(), r0 = run; setTimeout(() => { if (scene === 'run' && run === r0 && run.phase === 'over') { openCards(ids.map(id => MG.byId[id]), 0, 'reward'); A.sfx('chime'); } }, 1600); } setTimeout(() => { if (scene === 'run' && run && run.phase === 'over') A.music('results'); }, 2600);
 }
 function updateRun(dt) {
   run.pt += dt;
@@ -175,6 +178,7 @@ function updateRun(dt) {
 function synth(type, ...a) { if (type === 'down') { ptr.down = true; ptr.x = a[0]; ptr.y = a[1]; ptr.sx = a[0]; ptr.sy = a[1]; } if (type === 'move') { ptr.x = a[0]; ptr.y = a[1]; } if (type === 'up') ptr.down = false; input(type, ...a); }
 
 function input(type, x, y, vx, vy) {
+  if (CV.list) { cardInput(type, x, y); return; }
   if (scene === 'run' && run) {
     if (run.phase === 'play') { const g = run.g, d = g.def; if (g.done) return; try { if (d[type]) d[type](g, x, y, vx, vy); } catch (e) { console.error(d.id, type, e); } return; }
     if (run.phase === 'over' && type === 'down') { if (hit(x, y, 180, 548, 220, 56)) { press('again'); A.sfx('pop'); setTimeout(() => startRun(run.stage.id), 140); } else if (hit(x, y, 180, 612, 160, 40)) { press('home'); A.sfx('click'); setTimeout(() => goStages(), 120); } }
@@ -190,9 +194,8 @@ function input(type, x, y, vx, vy) {
     return;
   }
   if (scene === 'cards') {
-    if (ui.cardOpen) { ui.cardOpen = null; A.sfx('click'); return; }
     if (hit(x, y, 30, 30, 44, 44)) { scene = 'title'; A.sfx('click'); return; }
-    for (const c of cardTiles()) if (hit(x, y, c.x, c.y, c.w, c.h) && SAVE.d.cards[c.def.id]) { ui.cardOpen = c.def; A.sfx('chime'); return; }
+    const owned = storyOrder().filter(d => SAVE.d.cards[d.id]); for (const c of cardTiles()) if (hit(x, y, c.x, c.y, c.w, c.h) && SAVE.d.cards[c.def.id]) { openCards(owned, owned.indexOf(c.def), 'browse'); A.sfx('chime'); return; }
   }
 }
 function hit(x, y, cx, cy, w, h) { return Math.abs(x - cx) <= w / 2 && Math.abs(y - cy) <= h / 2; }
@@ -249,14 +252,8 @@ function drawStages(c, t) {
     c.restore();
   }
 }
-function cardTiles() { const out = []; MG.list.forEach((d, i) => out.push({ def: d, x: 64 + (i % 3) * 116, y: 120 + Math.floor(i / 3) * 132 - ui.cardScroll, w: 104, h: 120 })); return out; }
-const thumbCache = {};
-function thumb(def) {
-  if (thumbCache[def.id]) return thumbCache[def.id];
-  const off = document.createElement('canvas'); off.width = 360; off.height = 640; const o = off.getContext('2d'); o.scale(1, 1);
-  try { const g = makeG(def, 0, 1); def.init && def.init(g); g.t = 0.8; def.update && def.update(g, 0.016); def.draw(g, o); } catch (e) { o.fillStyle = '#ccc'; o.fillRect(0, 0, 360, 640); }
-  return thumbCache[def.id] = off;
-}
+function storyOrder() { const ix = Object.fromEntries(STAGES.map((st, i) => [st.id, i])); return MG.list.slice().sort((a, b) => (ix[a.stage] ?? 99) - (ix[b.stage] ?? 99)); }
+function cardTiles() { const out = []; storyOrder().forEach((d, i) => out.push({ def: d, x: 64 + (i % 3) * 116, y: 120 + Math.floor(i / 3) * 132 - ui.cardScroll, w: 104, h: 120 })); return out; }
 function drawCards(c, t) {
   const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#fff3dc'); g.addColorStop(1, '#f2d2a8'); c.fillStyle = g; c.fillRect(0, 0, W, H);
   const have = MG.list.filter(d => SAVE.d.cards[d.id]).length;
@@ -264,28 +261,110 @@ function drawCards(c, t) {
     if (tile.y < -70 || tile.y > H + 70) continue; const got = SAVE.d.cards[tile.def.id];
     c.save(); c.fillStyle = 'rgba(80,40,40,0.18)'; roundRect(c, tile.x - tile.w / 2, tile.y - tile.h / 2 + 4, tile.w, tile.h, 14); c.fill();
     roundRect(c, tile.x - tile.w / 2, tile.y - tile.h / 2, tile.w, tile.h, 14); c.save(); c.clip();
-    if (got) { c.drawImage(thumb(tile.def), 0, 60, 360, 400, tile.x - tile.w / 2, tile.y - tile.h / 2, tile.w, tile.h * 0.86); }
+    if (got) { const th = thumb(tile.def, true); if (th) c.drawImage(th, 0, 260 * 1.5, 540, 340 * 1.5, tile.x - tile.w / 2, tile.y - tile.h / 2, tile.w, tile.h * 0.86); else { c.fillStyle = '#ead6b8'; c.fillRect(tile.x - tile.w / 2, tile.y - tile.h / 2, tile.w, tile.h); } }
     else { c.fillStyle = '#d8c0a0'; c.fillRect(tile.x - tile.w / 2, tile.y - tile.h / 2, tile.w, tile.h); P.label(c, '?', tile.x, tile.y - 8, 40, 'rgba(90,50,40,0.5)', 'center', 900); }
     c.fillStyle = '#fff8ea'; c.fillRect(tile.x - tile.w / 2, tile.y + tile.h / 2 - 22, tile.w, 22); c.restore();
     c.strokeStyle = 'rgba(90,40,50,0.5)'; c.lineWidth = 2; c.stroke();
     P.label(c, got ? tile.def.cmd : '', tile.x, tile.y + tile.h / 2 - 11, 13, '#5a2a3a', 'center', 900); c.restore();
   }
   c.fillStyle = 'rgba(255,243,220,0.95)'; c.fillRect(0, 0, W, 58); backIcon(c, 30, 30); P.command(c, `Cards ${have}/${MG.list.length}`, 190, 32, 24, 1, { tilt: 0 });
-  if (ui.cardOpen) drawCardOpen(c, ui.cardOpen, t);
 }
 function wrap(c, text, x, y, maxW, lh, size, col, weight = 700) {
   c.font = `${weight} ${size}px Nunito, system-ui, sans-serif`; c.fillStyle = col; c.textAlign = 'left'; c.textBaseline = 'top';
   const words = text.split(' '); let line = '', yy = y; for (const w of words) { const test = line ? line + ' ' + w : w; if (c.measureText(test).width > maxW && line) { c.fillText(line, x, yy); line = w; yy += lh; } else line = test; } if (line) c.fillText(line, x, yy); return yy + lh;
 }
-function drawCardOpen(c, def, t) {
-  c.fillStyle = 'rgba(40,20,40,0.6)'; c.fillRect(0, 0, W, H);
-  const x = 20, y = 50, w = 320, h = 540; c.fillStyle = '#fff8ea'; roundRect(c, x, y, w, h, 22); c.fill(); c.strokeStyle = '#7a4a3a'; c.lineWidth = 3; c.stroke();
-  c.save(); roundRect(c, x + 10, y + 10, w - 20, 210, 16); c.clip(); c.drawImage(thumb(def), 0, 120, 360, 236, x + 10, y + 10, w - 20, 210); c.restore();
-  const cd = def.card || {}; let yy = y + 236;
-  P.label(c, cd.title || def.cmd, x + w / 2, yy + 8, 22, '#3a1640', 'center', 900); yy += 30;
-  P.label(c, [cd.ref, cd.kind].filter(Boolean).join(' · '), x + w / 2, yy + 4, 14, '#9a5a4a', 'center', 800); yy += 24;
-  yy = wrap(c, cd.text || '', x + 22, yy, w - 44, 22, 16, '#3a2a30', 700) + 8;
-  if (cd.ask) { c.fillStyle = '#fbe6c8'; const top = yy; const end = wrap(c, cd.ask, x + 34, yy + 10, w - 68, 21, 15, 'rgba(0,0,0,0)', 800); roundRect(c, x + 22, top, w - 44, end - top + 12, 12); c.fill(); wrap(c, cd.ask, x + 34, yy + 10, w - 68, 21, 15, '#7a3a2a', 800); }
+// ---------------- card pictures: each microgame played by its bot to the winning moment ----------------
+const thumbCache = {}; let thumbBudget = 2;
+function thumb(def, lazy) {
+  if (thumbCache[def.id]) return thumbCache[def.id];
+  if (lazy && thumbBudget <= 0) return null; thumbBudget--;
+  const off = document.createElement('canvas'); off.width = 540; off.height = 960; const o = off.getContext('2d'); o.scale(1.5, 1.5);
+  const saved = { parts: FX.parts, texts: FX.texts, shakeT: FX.shakeT }; FX.parts = []; FX.texts = [];
+  const pd = { down: ptr.down, x: ptr.x, y: ptr.y };
+  try {
+    const g = makeG(def, 0, 1, true); def.init && def.init(g);
+    const sy = (type, ...a) => { if (type === 'down') { ptr.down = true; ptr.x = a[0]; ptr.y = a[1]; } if (type === 'move') { ptr.x = a[0]; ptr.y = a[1]; } if (type === 'up') ptr.down = false; if (!g.done && def[type]) def[type](g, ...a); };
+    const dt = 1 / 30;
+    for (let i = 0; i < 330; i++) {
+      g.t += dt; def.update && def.update(g, dt); if (def.auto) def.auto(g, dt, sy); FX.update(dt);
+      if (!g.done && g.t >= g.dur) { if (def.winOnTimeout) g.win(); else g.fail(); }
+      if (g.done && g.t - g.doneAt > 0.4) break; if (!def.auto && g.t > 1.2) break;
+    }
+    def.draw(g, o); FX.draw(o);
+  } catch (e) { o.fillStyle = '#d8c0a0'; o.fillRect(0, 0, 360, 640); }
+  FX.parts = saved.parts; FX.texts = saved.texts; FX.shakeT = saved.shakeT; ptr.down = pd.down; ptr.x = pd.x; ptr.y = pd.y;
+  return thumbCache[def.id] = off;
+}
+
+// ---------------- card viewer (the Cards screen, and new cards after a level) ----------------
+const CV = { list: null, i: 0, scroll: 0, mode: 'browse', drag: null, slide: 0 };
+const CARD = { x: 12, y: 18, w: 336, h: 604, img: { x: 24, y: 30, w: 312, h: 214 }, body: { x: 34, y: 258, w: 292, h: 270 }, nav: 574 };
+function openCards(defs, i, mode) { CV.list = defs; CV.i = i; CV.scroll = 0; CV.mode = mode; CV.slide = 0; CV.drag = null; }
+function closeCards() { CV.list = null; CV.drag = null; A.sfx('click'); }
+function stepCard(d) { const n = CV.list.length, j = CV.i + d; if (j < 0 || j >= n) { CV.slide = 0; return; } CV.i = j; CV.scroll = 0; CV.slide = -d * 60; A.sfx('swoosh'); }
+const bodyCache = {};
+function textLines(c, text, maxW) { const out = []; let line = ''; for (const w of String(text).split(' ')) { const t = line ? line + ' ' + w : w; if (c.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; } if (line) out.push(line); return out; }
+// the card's words, laid out once into a tall canvas that the viewer scrolls
+function cardBody(def) {
+  if (bodyCache[def.id]) return bodyCache[def.id];
+  const cd = def.card || {}, Wd = CARD.body.w, S2 = 2, m = document.createElement('canvas').getContext('2d');
+  const blocks = []; let y = 2;
+  const add = (lines, font, lh, col, align, box) => { blocks.push({ lines, font, lh, col, align, y, box }); y += lines.length * lh; };
+  m.font = '900 23px Nunito, system-ui, sans-serif'; add(textLines(m, cd.title || def.cmd, Wd - 10), m.font, 29, '#3a1640', 'center'); y += 4;
+  m.font = '800 14px Nunito, system-ui, sans-serif'; add([[cd.ref, cd.kind].filter(Boolean).join(' · ')], m.font, 20, '#9a5a4a', 'center'); y += 12;
+  m.font = '700 17px Nunito, system-ui, sans-serif'; add(textLines(m, cd.text || '', Wd), m.font, 25, '#3a2a30', 'left'); y += 16;
+  if (cd.note) { const top = y; y += 12; m.font = '900 12px Nunito, system-ui, sans-serif'; add(['READING THIS STORY'], m.font, 18, '#4a7a52', 'left'); y += 2; m.font = '700 15px Nunito, system-ui, sans-serif'; add(textLines(m, cd.note, Wd - 32), m.font, 22, '#2f5a38', 'left'); y += 12; blocks.push({ rect: [0, top, Wd, y - top], fill: '#e7f2df' }); y += 14; }
+  if (cd.ask) { const top = y; y += 12; m.font = '800 16px Nunito, system-ui, sans-serif'; add(textLines(m, cd.ask, Wd - 32), m.font, 23, '#7a3a2a', 'left'); y += 12; blocks.push({ rect: [0, top, Wd, y - top], fill: '#fbe6c8' }); y += 6; }
+  const cv2 = document.createElement('canvas'); cv2.width = Wd * S2; cv2.height = Math.ceil(y * S2); const o = cv2.getContext('2d'); o.scale(S2, S2);
+  for (const b of blocks) if (b.rect) { o.fillStyle = b.fill; roundRect(o, ...b.rect, 14); o.fill(); }
+  o.textBaseline = 'top';
+  for (const b of blocks) if (b.lines) { const inBox = b.font.includes('15px') || b.font.includes('12px') || (b.font.includes('800 16px')); o.font = b.font; o.fillStyle = b.col; o.textAlign = b.align === 'center' ? 'center' : 'left';
+    b.lines.forEach((l, i) => o.fillText(l, b.align === 'center' ? Wd / 2 : (inBox ? 16 : 0), b.y + i * b.lh + (b.lh - parseInt(b.font.match(/(\d+)px/)[1])) / 2)); }
+  return bodyCache[def.id] = { canvas: cv2, h: y };
+}
+function drawCardViewer(c, t) {
+  const def = CV.list[CV.i], K = CARD, bd = cardBody(def), maxS = Math.max(0, bd.h - K.body.h);
+  CV.scroll = Math.max(0, Math.min(maxS, CV.scroll)); if (!CV.drag) CV.slide *= 0.75;
+  c.fillStyle = 'rgba(40,20,40,0.66)'; c.fillRect(0, 0, W, H);
+  c.save(); c.translate(CV.slide, 0);
+  c.fillStyle = 'rgba(30,10,30,0.35)'; roundRect(c, K.x, K.y + 6, K.w, K.h, 24); c.fill();
+  c.fillStyle = '#fff8ea'; roundRect(c, K.x, K.y, K.w, K.h, 24); c.fill(); c.strokeStyle = '#7a4a3a'; c.lineWidth = 3; c.stroke();
+  // picture from the winning moment
+  const th = thumb(def), I = K.img, sh = 360 * I.h / I.w, sy = Math.max(0, Math.min(640 - sh, (def.cardY ?? 400) - sh / 2));
+  c.save(); roundRect(c, I.x, I.y, I.w, I.h, 16); c.clip(); c.drawImage(th, 0, sy * 1.5, 540, sh * 1.5, I.x, I.y, I.w, I.h); c.restore();
+  if (CV.mode === 'reward') { c.save(); c.translate(I.x + 14, I.y + 14); c.fillStyle = '#ffd45a'; roundRect(c, 0, 0, 74, 28, 14); c.fill(); c.strokeStyle = '#7a3a1a'; c.lineWidth = 2; c.stroke(); P.label(c, 'New!', 37, 15, 16, '#5a2414', 'center', 900); c.restore(); }
+  // scrolling words
+  const B = K.body; c.save(); c.beginPath(); c.rect(B.x - 6, B.y, B.w + 12, B.h); c.clip(); c.drawImage(bd.canvas, B.x, B.y - CV.scroll, B.w, bd.h); c.restore();
+  if (CV.scroll > 2) { const gr = c.createLinearGradient(0, B.y, 0, B.y + 22); gr.addColorStop(0, 'rgba(255,248,234,1)'); gr.addColorStop(1, 'rgba(255,248,234,0)'); c.fillStyle = gr; c.fillRect(B.x - 6, B.y, B.w + 12, 22); }
+  if (CV.scroll < maxS - 2) { const gr = c.createLinearGradient(0, B.y + B.h - 34, 0, B.y + B.h); gr.addColorStop(0, 'rgba(255,248,234,0)'); gr.addColorStop(1, 'rgba(255,248,234,1)'); c.fillStyle = gr; c.fillRect(B.x - 6, B.y + B.h - 34, B.w + 12, 34);
+    c.save(); c.globalAlpha = 0.6 + 0.4 * Math.sin(t * 4); c.strokeStyle = '#9a5a4a'; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(W / 2 - 8, B.y + B.h - 10); c.lineTo(W / 2, B.y + B.h - 3); c.lineTo(W / 2 + 8, B.y + B.h - 10); c.stroke(); c.restore(); }
+  // navigation
+  const n = CV.list.length, ny = K.nav + 16;
+  c.strokeStyle = 'rgba(122,74,58,0.25)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(K.x + 20, K.nav - 14); c.lineTo(K.x + K.w - 20, K.nav - 14); c.stroke();
+  const arrow = (x, dir, on) => { c.save(); c.globalAlpha = on ? 1 : 0.25; c.fillStyle = '#f2dcbc'; c.beginPath(); c.arc(x, ny, 20, 0, 7); c.fill(); c.strokeStyle = '#7a4a3a'; c.lineWidth = 3.5; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); c.moveTo(x - dir * 4, ny - 8); c.lineTo(x + dir * 5, ny); c.lineTo(x - dir * 4, ny + 8); c.stroke(); c.restore(); };
+  if (n > 1) { arrow(54, -1, CV.i > 0); arrow(306, 1, CV.i < n - 1); }
+  if (CV.mode === 'reward') button(c, 180, ny, 132, 44, CV.i < n - 1 ? 'Next' : 'Done', { size: 19, pressed: ui.pressed === 'cvbtn' });
+  else P.label(c, `${CV.i + 1} of ${n}`, 180, ny, 16, '#7a4a3a', 'center', 900);
+  // close
+  c.fillStyle = 'rgba(40,20,50,0.55)'; c.beginPath(); c.arc(K.x + K.w - 26, K.y + 26, 17, 0, 7); c.fill(); c.strokeStyle = '#fff6ea'; c.lineWidth = 3; c.lineCap = 'round'; const cx = K.x + K.w - 26, cy = K.y + 26; c.beginPath(); c.moveTo(cx - 6, cy - 6); c.lineTo(cx + 6, cy + 6); c.moveTo(cx + 6, cy - 6); c.lineTo(cx - 6, cy + 6); c.stroke();
+  c.restore();
+}
+function cardInput(type, x, y) {
+  const K = CARD, d = CV.drag;
+  if (type === 'down') { CV.drag = { x, y, sx: CV.scroll, moved: false, axis: null }; return; }
+  if (!d) return;
+  const dx = x - d.x, dy = y - d.y;
+  if (type === 'move') { if (!d.axis && Math.hypot(dx, dy) > 8) d.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; if (d.axis === 'y') { CV.scroll = d.sx - dy; d.moved = true; } if (d.axis === 'x') { CV.slide = dx * 0.6; d.moved = true; } return; }
+  if (type !== 'up') return;
+  CV.drag = null;
+  if (d.axis === 'x' && Math.abs(dx) > 50) { stepCard(dx < 0 ? 1 : -1); return; }
+  if (d.moved) return;
+  const n = CV.list.length, ny = K.nav + 16;
+  if (Math.hypot(x - (K.x + K.w - 26), y - (K.y + 26)) < 24) { closeCards(); return; }
+  if (n > 1 && Math.hypot(x - 54, y - ny) < 26) { stepCard(-1); return; }
+  if (n > 1 && Math.hypot(x - 306, y - ny) < 26) { stepCard(1); return; }
+  if (CV.mode === 'reward' && hit(x, y, 180, ny, 140, 50)) { press('cvbtn'); if (CV.i < n - 1) stepCard(1); else closeCards(); return; }
+  if (CV.mode === 'browse' && (x < K.x || x > K.x + K.w || y < K.y || y > K.y + K.h)) closeCards();
 }
 function drawRun(c, t) {
   const r = run, st = r.stage;
@@ -335,9 +414,13 @@ function drawGrace(c, pt) {
   if (pt > 1.2) { c.globalAlpha = Math.min(1, (pt - 1.2) * 2); c.fillStyle = 'rgba(255,248,234,0.95)'; roundRect(c, 30, 440, 300, 76, 18); c.fill(); P.label(c, "You didn't earn this one.", 180, 464, 18, '#3a1640', 'center', 900); P.label(c, "That's grace.", 180, 492, 22, '#b8541f', 'center', 900); c.globalAlpha = 1; }
 }
 function speech(c, text, x, y, k) {
-  c.save(); c.globalAlpha = k; c.font = '800 19px Nunito, system-ui, sans-serif'; const w = Math.min(300, c.measureText(text).width + 36);
-  c.fillStyle = 'rgba(255,250,240,0.96)'; roundRect(c, x - w / 2, y - 26, w, 52, 22); c.fill(); c.beginPath(); c.moveTo(x - 10, y + 24); c.lineTo(x, y + 40); c.lineTo(x + 10, y + 24); c.fill();
-  c.strokeStyle = '#7a4a3a'; c.lineWidth = 2; roundRect(c, x - w / 2, y - 26, w, 52, 22); c.stroke(); P.label(c, text, x, y + 1, 19, '#3a1640', 'center', 800); c.restore();
+  // the host's line: wraps onto as many lines as needed and the bubble grows to fit
+  c.save(); c.globalAlpha = k; const size = 19, lh = 25, maxW = 270; c.font = `800 ${size}px Nunito, system-ui, sans-serif`;
+  const lines = []; let line = ''; for (const w of text.split(' ')) { const t = line ? line + ' ' + w : w; if (c.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; } if (line) lines.push(line);
+  const w = Math.max(...lines.map(l => c.measureText(l).width)) + 48, h = lines.length * lh + 26, top = y - h / 2;
+  c.fillStyle = 'rgba(255,250,240,0.96)'; roundRect(c, x - w / 2, top, w, h, 22); c.fill(); c.beginPath(); c.moveTo(x - 10, top + h - 2); c.lineTo(x, top + h + 14); c.lineTo(x + 10, top + h - 2); c.fill();
+  c.strokeStyle = '#7a4a3a'; c.lineWidth = 2; roundRect(c, x - w / 2, top, w, h, 22); c.stroke();
+  lines.forEach((l, i) => P.label(c, l, x, top + 13 + lh / 2 + i * lh, size, '#3a1640', 'center', 800)); c.restore();
 }
 function easeOut(k) { return 1 - Math.pow(1 - k, 3) + Math.sin(k * Math.PI) * 0.15; }
 // command banner, input hint and the fuse timer over a running microgame
@@ -367,7 +450,9 @@ function render() {
 
   ctx.setTransform(scale * DPR, 0, 0, scale * DPR, offX * DPR, offY * DPR);
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+  thumbBudget = 2;
   if (scene === 'title') drawTitle(ctx, T); else if (scene === 'stages') drawStages(ctx, T); else if (scene === 'cards') drawCards(ctx, T); else if (scene === 'run' && run) drawRun(ctx, T);
+  if (CV.list) drawCardViewer(ctx, T);
   ctx.restore();
   fillBands();
 }
@@ -389,8 +474,8 @@ function fillBands() {
   } catch (err) { }
 }
 // card list scrolling (drag)
-let dragY = null; cv.addEventListener('pointerdown', e => { if (scene === 'cards' && !ui.cardOpen) dragY = toLogical(e)[1]; });
-cv.addEventListener('pointermove', e => { if (scene === 'cards' && dragY !== null && ptr.down) { const y = toLogical(e)[1]; ui.cardScroll = Math.max(0, Math.min(Math.max(0, Math.ceil(MG.list.length / 3) * 132 - 460), ui.cardScroll - (y - dragY))); dragY = y; } });
+let dragY = null; cv.addEventListener('pointerdown', e => { if (scene === 'cards' && !CV.list) dragY = toLogical(e)[1]; });
+cv.addEventListener('pointermove', e => { if (scene === 'cards' && !CV.list && dragY !== null && ptr.down) { const y = toLogical(e)[1]; ui.cardScroll = Math.max(0, Math.min(Math.max(0, Math.ceil(MG.list.length / 3) * 132 - 460), ui.cardScroll - (y - dragY))); dragY = y; } });
 cv.addEventListener('pointerup', () => { dragY = null; });
 
 // ---------------- test hooks (used by tools/mgtest.py) ----------------

@@ -612,17 +612,22 @@ const AUD = (() => {
 
   // music: tracks are decoded once into AudioBuffers and looped gaplessly; an <audio> element is the fallback
   const decoded = {}; let cur = null, mtoken = 0;
-  function trackSrc(name) { try { const T = typeof MUSIC_TRACKS !== 'undefined' ? MUSIC_TRACKS : window.MUSIC_TRACKS; return T && T[name]; } catch (e) { return null; } }
-  function loadTrack(name) {
-    if (decoded[name]) return decoded[name];
-    return (decoded[name] = new Promise(res => {
+  function trackSrc(name, fmt) { try { const T = fmt === 'm4a' ? (typeof MUSIC_TRACKS_M4A !== 'undefined' ? MUSIC_TRACKS_M4A : null) : (typeof MUSIC_TRACKS !== 'undefined' ? MUSIC_TRACKS : window.MUSIC_TRACKS); return T && T[name]; } catch (e) { return null; } }
+  // Ogg Opus first; older iPhone Safari can't decode it, so fall back to the AAC copy
+  let oggOK = true;
+  function decodeSrc(src) {
+    return new Promise(res => {
       try {
-        const src = trackSrc(name); if (!src) return res(null);
+        if (!src) return res(null);
         const bin = atob(src.slice(src.indexOf(',') + 1)), u = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
         const p = ac.decodeAudioData(u.buffer, b => res(b), () => res(null)); if (p && p.catch) p.catch(() => res(null));
       } catch (e) { res(null); }
-    }));
+    });
+  }
+  function loadTrack(name) {
+    if (decoded[name]) return decoded[name];
+    return (decoded[name] = (oggOK ? decodeSrc(trackSrc(name)) : Promise.resolve(null)).then(b => { if (b) return b; oggOK = false; return decodeSrc(trackSrc(name, 'm4a')); }));
   }
   function stopCur(secs) {
     if (!cur) return; const c = cur; cur = null;
@@ -639,7 +644,7 @@ const AUD = (() => {
       const c = { name, g };
       try {
         if (buf) { c.src = ac.createBufferSource(); c.src.buffer = buf; c.src.loop = true; c.src.connect(g); c.src.start(n); }
-        else { const s = trackSrc(name); if (!s) return; c.el = new Audio(s); c.el.loop = true; ac.createMediaElementSource(c.el).connect(g); c.el.play().catch(() => {}); }
+        else { const s = trackSrc(name, 'm4a') || trackSrc(name); if (!s) return; c.el = new Audio(s); c.el.loop = true; ac.createMediaElementSource(c.el).connect(g); c.el.play().catch(() => {}); }
       } catch (e) { return; }
       stopCur(1.2); cur = c;
       setTimeout(() => { for (const k of ['title', 'results']) if (trackSrc(k)) loadTrack(k); }, 2500); // warm the other track
