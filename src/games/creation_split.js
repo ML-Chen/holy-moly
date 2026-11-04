@@ -6,7 +6,7 @@ const FISH = ['#ff9a4a', '#ffd34a', '#ff6a8a', '#7ae0c0', '#b48aff'];
 
 MG.add({
   id: 'split', stage: 'creation', cmd: 'SPLIT!', hint: 'swipe', time: 5, mood: 'sea', winText: 'Good!',
-  card: { title: 'Sky above, sea below', ref: 'Genesis 1:6–10', kind: 'Poem', text: 'In the creation poem, God made a great dome to separate the waters above from the waters below, and called it sky. Then God gathered the waters below into seas so that dry land could appear, and God saw that it was good.', ask: 'If you could go anywhere, would you rather fly in the sky or swim in the sea? Why?' },
+  card: { title: 'Sky above, sea below', ref: 'Genesis 1:6–10', kind: 'Poem', text: 'The creation poem says that God made a great dome to separate the waters above from the waters below, and called it Sky. Then God gathered the waters below into seas so dry land could appear, and God saw that it was good.', note: 'Ancient people pictured the sky as a dome holding back water, and this poem uses that picture to praise God.', ask: 'If you could go anywhere, would you rather fly in the sky or swim in the sea? Why?' },
   init(g) {
     const s = g.s; s.need = [1, 1, 2][g.level]; s.got = 0; s.k = 0; s.wob = 0; s.wobT = -9; s.d0 = null; s.doneT = null;
     s.fish = FISH.map((col, i) => ({ col, x: 40 + i * 70 + Math.random() * 20, ph: Math.random() * 6, sp: 0.9 + Math.random() * 0.5, h: 50 + Math.random() * 40 }));

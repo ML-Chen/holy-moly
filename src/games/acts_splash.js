@@ -76,7 +76,7 @@ function paintDesert(o) {
 
 MG.add({
   id: 'splash', stage: 'acts', cmd: 'SPLASH!', hint: 'tap', time: 5.5, mood: 'desert', winText: 'Splash!',
-  card: { title: 'Water in the desert', ref: 'Acts 8:26–39', kind: 'Story', text: 'An official from Ethiopia, the queen\'s treasurer, was riding home in his chariot reading the prophet Isaiah, and he was someone some people thought should be left out. Philip told him the good news about Jesus, and when they came to water the official asked, "What is to stop me from being baptized?" so Philip baptized him, and he went on his way full of joy.', ask: 'Who might feel left out at your school or church? How could you show them they belong?' },
+  card: { title: 'Water in the desert', ref: 'Acts 8:26–39', kind: 'Acts story', text: 'The book of Acts tells about an official from Ethiopia, a man some people thought did not belong. Philip told him about Jesus. When they came to water, the man asked, "What is to stop me from being baptized?" So Philip baptized him.', ask: 'Who might feel left out at school or church? How could you show them they belong?' },
   init(g) {
     const s = g.s; s.x = [10, -30, -50][g.level]; s.speed = [80, 100, 120][g.level] * g.speed; s.ww = [80, 60, 46][g.level]; s.state = 'ride'; s.tapT = -9; s.misses = []; s.drops = []; s.passes = 0; s.dir = 1;
   },

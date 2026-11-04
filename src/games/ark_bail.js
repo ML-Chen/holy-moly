@@ -53,7 +53,7 @@ function drawLeaks(c, s, t, wy) {
 let DARK = null; function darkLayer() { if (!DARK) { DARK = document.createElement('canvas'); DARK.width = W; DARK.height = H; } return DARK; }
 MG.add({
   id: 'bail', stage: 'ark', cmd: 'BAIL!', hint: 'tap', time: 5, mood: 'storm', winText: 'Snug!',
-  card: { title: 'Safe in the storm', ref: 'Genesis 7:17–8:1', kind: 'Story', text: 'For a long time the rain fell and the ark floated on the deep water. Noah, his family and all the animals were kept safe inside, and God remembered Noah and every animal with him.', ask: 'What helps you feel safe when there is a storm or something scary? Who could you help feel safe?' },
+  card: { title: 'Safe in the storm', ref: 'Genesis 7:17–8:1', kind: 'Ancient story', text: 'In the Noah story, the rain fell for a long time and the ark floated on the deep water. Noah, his family and all the animals were safe inside. God remembered them and sent a wind to dry the earth.', ask: 'What helps you feel safe when something scary happens? Who could you help feel safe?' },
   init(g) {
     const s = g.s, n = [3, 4, 6][g.level], spots = SPOTS.slice().sort(() => Math.random() - 0.5), d = g.dur;
     s.leaks = Array.from({ length: n }, (_, i) => ({ x: spots[i][0], y: spots[i][1], at: d * (i < 2 ? 0.04 + i * 0.06 : 0.12 + (i - 1) / (n - 1) * 0.42), plugged: 0, dir: spots[i][0] < 180 ? 1 : -1, open: false }));

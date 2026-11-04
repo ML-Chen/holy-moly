@@ -17,7 +17,7 @@ function butterfly(c, x, y, t, col) {
 }
 MG.add({
   id: 'pair', stage: 'ark', cmd: 'PAIR!', hint: 'tap', time: 5, mood: 'bright', winText: 'Together!',
-  card: { title: 'Two of every kind', ref: 'Genesis 6:19–20; 7:8–9', kind: 'Story', text: 'God told Noah to bring two of every kind of animal into the ark, a male and a female, to keep them alive through the flood. The animals came to Noah two by two, and Noah made room for every one of them.', ask: 'Who is a friend or family member you like to do things with? How do you look after each other?' },
+  card: { title: 'Two of every kind', ref: 'Genesis 6:19–20; 7:8–9', kind: 'Ancient story', text: 'In the story of Noah, God told Noah to bring two of every kind of animal into the ark, a male and a female, to keep them alive through the flood. The animals came to Noah two by two.', ask: 'Who is a friend or family member you like to do things with? How do you look after each other?' },
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level];
     const want = KINDS[Math.floor(Math.random() * KINDS.length)];

@@ -52,7 +52,7 @@ function cow(c, x, y, s, f) { // a friendly little cow (Jonah 4:11: "and also ma
 
 MG.add({
   id: 'sulk', stage: 'exile', cmd: 'SULK!', hint: 'tap', time: 5, mood: 'party', winText: 'Cool!',
-  card: { title: 'Mercy for Nineveh', ref: 'Jonah 3–4', kind: 'Story', text: 'When the people of Nineveh said sorry and changed their ways, God forgave them. Jonah sulked because he wanted his enemies punished, but God grew a plant to shade him and told him that God cared about every person and animal in that great city.', ask: 'Is there someone you find it hard to forgive? What would it look like to want good things for them?' },
+  card: { title: 'Mercy for Nineveh', ref: 'Jonah 3–4', kind: 'Ancient story', text: 'Later in the story, the people of Nineveh said sorry and changed their ways, and God forgave them. Jonah sulked because he wanted his enemies punished. God asked him, "Should I not care about that great city and all its people?"', note: 'The book ends with God\'s question and never tells us Jonah\'s answer, so each reader gets to answer it.', ask: 'Is there someone you find it hard to forgive? What would it look like to want good things for them?' },
   init(g) {
     const s = g.s, L = g.level; s.p = 0; s.pd = 0; s.step = 1 / [5, 7, 9][L]; s.wilt = [0, 0.05, 0.09][L] * g.speed; s.done = false; s.doneT = 0; s.drops = []; s.misses = []; s.lastTap = -9;
   },

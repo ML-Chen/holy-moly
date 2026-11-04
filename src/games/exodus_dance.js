@@ -10,7 +10,7 @@ const DANCERS = [
 const CONF = ['#ffd45a', '#ff7a8a', '#7ad0f0', '#b0e070', '#c88ae8', '#ffffff', '#ff9a4a'];
 MG.add({
   id: 'dance', stage: 'exodus', cmd: 'DANCE!', hint: 'tap', time: 6, mood: 'party', winText: 'Sing!',
-  card: { title: 'Miriam\'s song', ref: 'Exodus 15:20–21', kind: 'Song', text: 'When the Israelites were safe on the other side of the sea, Miriam the prophet picked up her tambourine. All the women followed her, dancing and singing a song of thanks to God for setting them free.', ask: 'What song or dance would you use to say thank you? Try it together as a family!' },
+  card: { title: 'Miriam\'s song', ref: 'Exodus 15:20–21', kind: 'Ancient story', text: 'The book of Exodus tells how, when the Israelites were safe on the other side of the sea, Miriam the prophet picked up her tambourine. All the women followed her, dancing and singing a song of thanks to God for setting them free.', ask: 'What song or dance would you use to say thank you? Try it together as a family!' },
   init(g) {
     const s = g.s; s.iv = 0.62 / Math.pow(g.speed, 0.6); s.t0 = 0.95; s.need = [4, 5, 6][g.level]; s.win = [0.2, 0.16, 0.13][g.level];
     s.maxMiss = [4, 3, 3][g.level]; s.hits = 0; s.miss = 0; s.done = {}; s.lastTap = -9; s.hitT = -9; s.missT = -9; s.wob = -1; s.beatN = -1; s.conf = []; s.rings = [];

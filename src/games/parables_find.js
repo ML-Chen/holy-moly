@@ -37,7 +37,7 @@ function heartF(c, x, y, r, col) { c.save(); c.translate(x, y); c.fillStyle = co
 
 MG.add({
   id: 'find', stage: 'parables', cmd: 'FIND!', hint: 'tap', time: 5, mood: 'bright', winText: 'Found!',
-  card: { title: 'The lost sheep', ref: 'Luke 15:3–7', kind: 'Parable', text: 'Jesus told about a shepherd with a hundred sheep who lost just one. He left the others safe and searched until he found it, then carried it home on his shoulders and threw a party with his friends.', ask: 'Have you ever felt lost or left out? How does it feel to know God comes looking for you?' },
+  card: { title: 'The lost sheep', ref: 'Luke 15:3–7', kind: 'Parable', text: 'Jesus told a story about a shepherd with a hundred sheep who lost just one. He left the others and searched until he found it. Then he carried it home on his shoulders and called his friends to celebrate with him.', ask: 'Have you ever felt lost or left out? How does it feel to know God comes looking for you?' },
   init(g) {
     const s = g.s, L = g.level, n = [3, 5, 7][L];
     const slots = SLOTS.slice().sort(() => Math.random() - 0.5).slice(0, n);

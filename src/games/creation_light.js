@@ -8,7 +8,7 @@ function dawnLayer() { if (!layer) { layer = document.createElement('canvas'); l
 
 MG.add({
   id: 'light', stage: 'creation', cmd: 'LIGHT!', hint: 'tap', time: 5, mood: 'night', winText: 'Good!',
-  card: { title: 'Let there be light', ref: 'Genesis 1:1–5', kind: 'Poem', text: 'Genesis begins with a poem: at first everything was dark and empty, and God said, "Let there be light," and there was light. God saw that the light was good and called it day.', ask: 'What is your favourite thing to see when the sun comes up?' },
+  card: { title: 'Let there be light', ref: 'Genesis 1:1–5', kind: 'Poem', text: 'The book of Genesis begins with a poem. At first everything was dark and empty, and God said, "Let there be light," and there was light. God saw that the light was good and called it Day.', note: 'People wrote this poem to worship God for making a good world, long before anyone knew how stars and planets form.', ask: 'What is your favorite thing to see when the sun comes up?' },
   init(g) {
     const s = g.s, n = [2, 3, 4][g.level], amp = [0, 34, 58][g.level];
     s.sparks = []; let tries = 0;

@@ -17,7 +17,7 @@ function shell(c, x, y, s, col) { c.save(); c.translate(x, y); c.scale(s, s); c.
 
 MG.add({
   id: 'spit', stage: 'exile', cmd: 'SPIT!', hint: 'tap', time: 5, mood: 'sea', winText: 'Ptooey!',
-  card: { title: 'Jonah and the big fish', ref: 'Jonah 1–2', kind: 'Story', text: 'God asked Jonah to take a message to Nineveh, but Jonah sailed the other way. A big fish swallowed him, and after three days of praying inside it, the fish spat Jonah out onto dry land so he could have another chance.', ask: 'When have you been given a second chance? How could you give someone else one?' },
+  card: { title: 'Jonah and the big fish', ref: 'Jonah 1–2', kind: 'Ancient story', text: 'The book of Jonah tells a story about a prophet who sailed the other way when God sent him to Nineveh. A big fish swallowed Jonah, and he prayed inside it for three days and nights. Then the fish spat him out onto dry land.', note: 'Jonah is a funny story with a serious point: God\'s love reaches even the people we think of as enemies.', ask: 'When have you been given a second chance? How could you give someone else one?' },
   init(g) {
     const s = g.s, L = g.level; s.need = [4, 6, 8][L]; s.tick = 0; s.lastT = -9; s.out = false; s.outT = 0; s.landed = false; s.landT = 0;
     s.fx = FX0; s.fy = FY0; s.drift = [0, 14, 26][L]; s.ripples = []; s.bubbles = []; s.taps = [];

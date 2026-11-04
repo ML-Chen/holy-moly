@@ -26,7 +26,7 @@ function bundle(c, x, y, s, f) { c.save(); c.translate(x, y); c.scale(s * f, s);
 
 MG.add({
   id: 'run', stage: 'parables', cmd: 'RUN!', hint: 'mash', time: 5, mood: 'party', winText: 'Welcome!',
-  card: { title: 'The father who ran', ref: 'Luke 15:11–32', kind: 'Parable', text: 'A son took his share of his father\'s money, went far away and wasted it all. When he came home hungry and ashamed, his father saw him a long way off, ran to hug him, and threw a party with a fine robe and a ring.', ask: 'When someone says sorry to you, how can you welcome them back like this father did?' },
+  card: { title: 'The father who ran', ref: 'Luke 15:11–32', kind: 'Parable', text: 'Jesus told a story about a son who took his share of his father\'s money, went far away and wasted it. When he came home hungry and ashamed, his father saw him a long way off and ran to hug him. Then the father threw a party for him.', ask: 'When someone says sorry to you, how can you welcome them back like this father did?' },
   init(g) {
     const s = g.s, L = g.level;
     s.son = 0.96; s.gate = [0.1, 0.14, 0.18][L]; s.sv = (s.son - s.gate) / (g.dur * 0.9);

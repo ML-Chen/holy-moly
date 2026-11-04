@@ -75,7 +75,7 @@ function paintScene(o) {
 
 MG.add({
   id: 'speak', stage: 'acts', cmd: 'SPEAK!', hint: 'tap', time: 5.5, mood: 'party', winText: 'We hear you!',
-  card: { title: 'Wind and fire', ref: 'Acts 2:1–12', kind: 'Story', text: 'At the harvest feast of Pentecost, a sound like a rushing wind filled the house, and flames of light rested on each of Jesus\'s friends. A crowd of visitors from many countries gathered, and each of them heard the friends telling about God in their own language.', ask: 'Do you know someone who speaks a different language? How could you help them feel at home?' },
+  card: { title: 'Wind and fire', ref: 'Acts 2:1–12', kind: 'Acts story', text: 'The book of Acts tells how, at the feast of Pentecost, a sound like a rushing wind filled the house where Jesus\'s friends were. Flames like fire rested on each of them. Visitors from many lands heard them praising God in their own languages.', ask: 'Do you know someone who speaks a different language? How could you help them feel at home?' },
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level], vis = VISITORS.slice().sort(() => Math.random() - 0.5);
     s.people = SPOTS.slice(0, n).map(([x, y], i) => ({ x, y, hx: x, ...vis[i], sc: 1.06 + (y - 480) / 120 * 0.14, got: false, gotT: -9, phase: Math.random() * 6, from: i % DISCIPLES.length }));

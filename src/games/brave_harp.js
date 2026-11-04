@@ -70,7 +70,7 @@ function lyre(c, s, t) {
 
 MG.add({
   id: 'harp', stage: 'brave', cmd: 'HARP!', hint: 'tap', time: 6, mood: 'bright', winText: 'Peace!',
-  card: { title: 'David plays for Saul', ref: '1 Samuel 16:14–23', kind: 'Story', text: 'King Saul often felt troubled and afraid, and nothing seemed to help. A shepherd boy named David came to play the lyre for him, and the music calmed Saul so he felt better.', ask: 'What helps you feel calm when you are upset? How could you help someone else feel calm?' },
+  card: { title: 'David plays for Saul', ref: '1 Samuel 16:14–23', kind: 'Story', text: 'The first book of Samuel tells how King Saul often felt troubled and afraid. A young shepherd named David came to play the lyre for him. The music calmed Saul and helped him feel better.', ask: 'What helps you feel calm when you are upset? How could you help someone else feel calm?' },
   init(g) {
     const s = g.s; s.need = [3, 4, 5][g.level]; s.good = 0; s.calm = 0;
     s.pat = PATTERNS[Math.floor(Math.random() * PATTERNS.length)]; s.idx = 0;

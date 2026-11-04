@@ -1,7 +1,7 @@
 // BOARD! — drag the animals up into the ark before the rain gets heavy (Genesis 7).
 MG.add({
   id: 'board', stage: 'ark', cmd: 'BOARD!', hint: 'drag', time: 5.5, mood: 'storm',
-  card: { title: 'Two by two', ref: 'Genesis 6–9', kind: 'Story', text: 'Noah and his family built a huge boat and welcomed every kind of animal aboard. After the flood, God put a rainbow in the sky and promised to care for every living creature.', ask: 'How can you take care of animals and the earth this week?' },
+  card: { title: 'Two by two', ref: 'Genesis 6–9', kind: 'Ancient story', text: 'The book of Genesis tells how Noah and his family built a huge boat and welcomed every kind of animal aboard. After the flood, God put a rainbow in the sky and promised to care for every living creature.', note: 'People all over the ancient world told stories about a great flood, and Israel\'s version is about God caring for every living thing.', ask: 'How can you take care of animals and the earth this week?' },
   init(g) {
     const s = g.s, n = [2, 3, 3][g.level];
     const kinds = ['sheep', 'elephant', 'giraffe', 'cat', 'goat', 'camel', 'donkey', 'lion'].sort(() => Math.random() - 0.5);

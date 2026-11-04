@@ -8,7 +8,7 @@ const AX = 180, AY = 560;
 
 MG.add({
   id: 'name', stage: 'creation', cmd: 'NAME!', hint: 'tap', time: 5, mood: 'bright', winText: 'Perfect!',
-  card: { title: 'What will you call it?', ref: 'Genesis 2:18–20', kind: 'Story', text: 'God brought every animal and bird to the first human to see what he would call them. Whatever he called each living creature, that became its name.', ask: 'If you met a brand-new animal, what would you name it?' },
+  card: { title: 'What will you call it?', ref: 'Genesis 2:18–20', kind: 'Ancient story', text: 'Genesis tells an ancient story about the first human in a garden. God brought every animal and bird to the human to see what he would call them. Whatever he called each creature became its name.', note: 'This very old story was told to show that people and animals belong together in God\'s world.', ask: 'If you met a brand-new animal, what would you name it?' },
   init(g) {
     const s = g.s, pick = a => a[Math.floor(Math.random() * a.length)];
     const coat = pick(COATS);

@@ -26,7 +26,7 @@ function bunting(c, x0, y0, x1, y1, sag, t, cols) {
 
 MG.add({
   id: 'welcome', stage: 'jesus', cmd: 'WELCOME!', hint: 'tap', time: 5, mood: 'party', winText: 'Hug!',
-  card: { title: 'Let the children come', ref: 'Mark 10:13–16', kind: 'Story', text: 'Parents brought their children to Jesus so he could bless them, but the disciples told them to go away. Jesus was upset with his friends and said, "Let the children come to me." Then he took the children in his arms and blessed them.', ask: 'Jesus made time for children. Who makes time for you, and who could you make time for?' },
+  card: { title: 'Let the children come', ref: 'Mark 10:13–16', kind: 'Gospel story', text: 'The Gospel of Mark tells how people brought children to Jesus for a blessing, but the disciples scolded them. Jesus was upset with his friends and said, "Let the children come to me." He took the children in his arms and blessed them.', ask: 'Jesus made time for children. Who makes time for you, and who could you make time for?' },
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level];
     s.gu = BLOCK.slice(0, n).map(([x, y], i) => ({ x, y, hx: x, sc: 0.95 + (y - 450) / 120 * 0.2, look: GROWNUPS[i], moved: false, movT: 0, side: x < 180 ? -1 : x > 180 ? 1 : (Math.random() < 0.5 ? -1 : 1), phase: Math.random() * 6 }));

@@ -15,7 +15,7 @@ function paintBands(c, k0, k1, alpha = 1, t = 0) {
 }
 MG.add({
   id: 'rainbow', stage: 'ark', cmd: 'RAINBOW!', hint: 'drag', time: 5.5, mood: 'bright', winText: 'Promise!',
-  card: { title: 'The rainbow promise', ref: 'Genesis 9:8–17', kind: 'Story', text: 'After the flood, God made a promise to Noah, his family and every living creature. God put a rainbow in the clouds as a sign of that promise, so that whenever it appears God remembers it.', ask: 'What is a promise you have made to someone? How do you keep it?' },
+  card: { title: 'The rainbow promise', ref: 'Genesis 9:8–17', kind: 'Ancient story', text: 'Genesis tells how, after the flood, God made a promise to Noah, his family and every living creature. God put a rainbow in the clouds as a sign of that promise, so that whenever it appears, God will remember it.', note: 'Israel told this story to say that God is faithful, and every rainbow can remind us of God\'s promise to care for the world.', ask: 'What is a promise you have made to someone? How do you keep it?' },
   init(g) {
     const s = g.s; s.tol = [46, 34, 26][g.level]; s.reach = 0; s.tracing = false; s.last = null; s.wobble = 0; s.done = 0; s.sparks = [];
     // either end can be the start; the child starts from whichever foot they touch

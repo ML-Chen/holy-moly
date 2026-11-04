@@ -3,7 +3,7 @@ const BY = 486;               // the basket's screen height; the river scrolls p
 const RL = 40, RR = 320;      // river edges
 MG.add({
   id: 'float', stage: 'exodus', cmd: 'FLOAT!', hint: 'drag', time: 5.5, mood: 'sea', winText: 'Found!',
-  card: { title: 'A basket in the reeds', ref: 'Exodus 2:1–10', kind: 'Story', text: 'To keep her baby safe, a Hebrew mother made a basket boat and set it among the reeds of the Nile while his big sister Miriam watched. Pharaoh\'s daughter found the crying baby, felt sorry for him, adopted him as her son, and named him Moses.', ask: 'Pharaoh\'s daughter helped a baby from a different people. How can your family welcome someone who is different from you?' },
+  card: { title: 'A basket in the reeds', ref: 'Exodus 2:1–10', kind: 'Ancient story', text: 'The book of Exodus tells how a Hebrew mother hid her baby in a basket among the reeds of the Nile, while his sister watched. Pharaoh\'s daughter found the crying baby and felt sorry for him. She adopted him and named him Moses.', ask: 'Pharaoh\'s daughter helped a baby from another people. How can you welcome someone new?' },
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level], gap = [134, 118, 104][g.level];
     s.D = 1380 + g.level * 160; s.v = s.D / (g.dur * 0.7); s.dist = 0;

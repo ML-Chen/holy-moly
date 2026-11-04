@@ -74,7 +74,7 @@ function spawnStars(g, x, y) {
 }
 MG.add({
   id: 'count', stage: 'family', cmd: 'COUNT!', hint: 'mash', time: 4.5, mood: 'night', winOnTimeout: true, winText: 'So many!',
-  card: { title: 'Count the stars', ref: 'Genesis 15', kind: 'Story', text: 'Abraham and Sarah were old and still had no children. One night God told Abraham to look up and count the stars if he could, because one day his family would be that many, and Abraham trusted God.', ask: 'Who is in your family, and who has become like family to you?' },
+  card: { title: 'Count the stars', ref: 'Genesis 15', kind: 'Ancient story', text: 'The book of Genesis tells how Abraham and Sarah were old and still had no children. One night God told Abraham to look up and count the stars, if he could. God promised that one day his family would be that many, and Abraham trusted God.', ask: 'Who is in your family, and who has become like family to you?' },
   init(g) { const s = g.s; s.stars = []; s.rings = []; s.taps = 0; s.joy = 0; s.joyShow = 0; s.bot = 0; s.shoot = [{ t0: 0.9, x: 330, y: 70 }, { t0: 2.4, x: 150, y: 40 }, { t0: 3.6, x: 260, y: 120 }]; },
   down(g, x, y) {
     const s = g.s; s.taps++; spawnStars(g, x, y);

@@ -10,7 +10,7 @@ function flightPos(s, k) {
 }
 MG.add({
   id: 'send', stage: 'ark', cmd: 'SEND!', hint: 'swipe', time: 5, mood: 'sea', winText: 'A leaf!',
-  card: { title: 'The dove and the leaf', ref: 'Genesis 8:6–11', kind: 'Story', text: 'When the rain stopped, Noah opened the window of the ark and sent out a dove to see if the water had gone down. The second time he sent it, the dove came back in the evening with a fresh olive leaf in its beak, and Noah knew the land was drying out.', ask: 'What is a small sign that tells you something good is coming? How can you bring good news to someone today?' },
+  card: { title: 'The dove and the leaf', ref: 'Genesis 8:6–11', kind: 'Ancient story', text: 'Genesis tells how, when the rain stopped, Noah sent a dove out of the ark. The second time, the dove came back in the evening with a fresh olive leaf in its beak. Then Noah knew the water was going down.', ask: 'What small sign tells you something good is coming? Who could you bring good news to today?' },
   init(g) {
     const s = g.s; s.state = 'perch'; s.sentT = 0; s.flops = []; s.wiggle = -9;
     // level 0: the whole sky is open. Level 1+: aim for the bright gap in the clouds, which drifts at level 2.

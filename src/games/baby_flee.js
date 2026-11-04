@@ -34,7 +34,7 @@ function palm(c, x, y, s, t, lean) { P.palm(c, x, y, s, lean, t, '#2e5a5a'); }
 
 MG.add({
   id: 'flee', stage: 'baby', cmd: 'FLEE!', hint: 'drag', time: 6, mood: 'night', winText: 'Safe!',
-  card: { title: 'Refugees in Egypt', ref: 'Matthew 2:13–15', kind: 'Story', text: 'An angel warned Joseph in a dream that baby Jesus was in danger, so he woke Mary and they left at night for Egypt. Jesus and his family became refugees, living far from home until it was safe to go back.', ask: 'Some families today have to leave their homes to stay safe. How could your family welcome someone who has just arrived?' },
+  card: { title: 'Refugees in Egypt', ref: 'Matthew 2:13–15', kind: 'Gospel story', text: 'The Gospel of Matthew tells how an angel warned Joseph in a dream that baby Jesus was in danger. Joseph woke Mary, and that night they left for Egypt. Jesus and his family became refugees, living far from home until it was safe to go back.', ask: 'Some families have to leave home to stay safe. How could you welcome a new family?' },
   init(g) {
     const s = g.s; s.x = 180; s.tx = 180; s.dist = 0; s.len = [4.0, 4.6, 5.0][g.level]; s.v = [1.1, 1.2, 1.3][g.level] * Math.sqrt(g.speed);
     s.bump = -9; s.safe = -1; s.drag = false; s.go = 0;

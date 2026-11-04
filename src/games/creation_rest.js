@@ -6,7 +6,7 @@ const EVE = { x: 150, y: 500 }, ES = 1.35;
 
 MG.add({
   id: 'rest', stage: 'creation', cmd: 'REST!', hint: 'still', time: 4, mood: 'night', winOnTimeout: true, winText: 'Shalom!', failText: 'Whoops!',
-  card: { title: 'The day of rest', ref: 'Genesis 2:1–3', kind: 'Poem', text: 'After six days of making, God rested on the seventh day. God blessed that day and made it holy, a gift of rest for every person and animal.', ask: 'What helps you feel calm and rested? When could your family take a rest day together?' },
+  card: { title: 'The day of rest', ref: 'Genesis 2:1–3', kind: 'Poem', text: 'The creation poem ends on the seventh day, when God rested from all the work of making. God blessed the seventh day and made it holy.', note: 'People wrote this poem to praise God, and its seventh day teaches that rest is a holy gift for everyone.', ask: 'What helps you feel calm and rested? When could your family take a rest day together?' },
   init(g) {
     const s = g.s; s.woke = null; s.lure = [];
     // the tempting things, timed through the game: more of them, and sooner, at higher levels

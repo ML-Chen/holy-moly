@@ -46,7 +46,7 @@ function food(c, kind, x, y, s) { if (kind === 'fish') P.fishShape(c, x, y, s * 
 
 MG.add({
   id: 'share', stage: 'jesus', cmd: 'SHARE!', hint: 'drag', time: 6, mood: 'bright', winText: 'Yum!',
-  card: { title: 'A lunch to share', ref: 'John 6:1–14', kind: 'Story', text: 'A huge crowd followed Jesus to a hillside by the Sea of Galilee, and there was nothing to eat. A boy offered his five little loaves and two fish, Jesus gave thanks, and everyone ate until they were full, with twelve baskets left over.', ask: 'What is something small you could share this week? Who would you share it with?' },
+  card: { title: 'A lunch to share', ref: 'John 6:1–14', kind: 'Gospel story', text: 'The Gospel of John tells how a huge crowd followed Jesus to a hillside, and there was no food for them. A boy had five small loaves and two fish. Jesus gave thanks and shared them, and everyone ate until they were full.', ask: 'What is something small you could share this week? Who would you share it with?' },
   init(g) {
     const s = g.s, n = [3, 5, 6][g.level];
     const looks = LOOKS.slice().sort(() => Math.random() - 0.5), mats = MATS.slice().sort(() => Math.random() - 0.5);

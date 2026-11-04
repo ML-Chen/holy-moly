@@ -1,7 +1,7 @@
 // SEE! — Hagar and her son are out of water in the desert; tap the hidden well when it glints (Genesis 21:19).
 MG.add({
   id: 'see', stage: 'family', cmd: 'SEE!', hint: 'tap', time: 5, mood: 'desert',
-  card: { title: 'The God who sees', ref: 'Genesis 16 and 21', kind: 'Story', text: 'Hagar was an enslaved Egyptian woman who was sent into the desert with her son. When their water ran out, God opened her eyes to see a well, and Hagar called God "the God who sees me."', ask: 'Who might feel unseen at your school or church? How could you notice them?' },
+  card: { title: 'The God who sees', ref: 'Genesis 16 and 21', kind: 'Ancient story', text: 'Genesis tells about Hagar, an enslaved Egyptian woman who ran away into the desert. God found her by a spring, and Hagar called God "the God who sees me." Years later, when she and her son ran out of water, God showed her a well.', ask: 'Who might feel unseen at your school or church? How could you notice them?' },
   init(g) {
     const s = g.s; const spots = [[70, 470], [175, 455], [290, 470], [110, 545], [255, 540]].sort(() => Math.random() - 0.5);
     s.well = { x: spots[0][0], y: spots[0][1] }; s.rocks = spots.slice(1, 2 + g.level * 2).map(([x, y]) => ({ x, y }));

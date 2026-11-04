@@ -8,7 +8,7 @@ const GROUND = 548, PS = 1.45;
 
 MG.add({
   id: 'tend', stage: 'creation', cmd: 'TEND!', hint: 'drag', time: 5.5, mood: 'bright', winText: 'Blooming!',
-  card: { title: 'Take care of the garden', ref: 'Genesis 2:15', kind: 'Story', text: 'God put the first human in the garden of Eden to work it and take care of it. Looking after plants, animals and the earth is one of the first jobs God gave people.', ask: 'What is one living thing you could help take care of this week?' },
+  card: { title: 'Take care of the garden', ref: 'Genesis 2:15', kind: 'Ancient story', text: 'In the garden story in Genesis, God puts the first human in the garden of Eden to work it and take care of it. Looking after plants, animals and the earth is one of the first jobs people are given.', note: 'In this ancient story the first human is made from soil, a way of saying that people belong to the earth and should care for it.', ask: 'What is one living thing you could help take care of this week?' },
   init(g) {
     const s = g.s, n = [2, 3, 4][g.level];
     const xs = { 2: [100, 250], 3: [64, 176, 290], 4: [48, 132, 218, 304] }[n];

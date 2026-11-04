@@ -6,7 +6,7 @@ const wallEdge = (y, open) => { // half-width of the dry path at height y, for o
 };
 MG.add({
   id: 'part', stage: 'exodus', cmd: 'PART!', hint: 'swipe', time: 5, mood: 'sea', winText: 'Free!',
-  card: { title: 'A path through the sea', ref: 'Exodus 14–15', kind: 'Story', text: 'God freed the Israelites from slavery in Egypt, and when they came to the sea, a strong wind blew all night and opened a path of dry ground. The families walked across with their children and animals, and on the other side Moses and Miriam led the people in songs of thanks.', ask: 'When has a way opened up for you that you did not expect? Who could you thank for it?' },
+  card: { title: 'A path through the sea', ref: 'Exodus 14–15', kind: 'Ancient story', text: 'The book of Exodus tells how God set the Israelites free from slavery in Egypt. At the sea, a strong wind blew all night and opened a path of dry ground. The people walked across, and on the other side they sang songs of thanks.', note: 'Many scholars think this story grew from the memories of a smaller group. Jewish families still retell it every Passover to remember that God cares about people who are not free.', ask: 'When has a way opened up for you that you did not expect? Who could you thank for it?' },
   init(g) {
     const s = g.s; s.need = [1, 1.6, 1.8][g.level]; s.power = 0; s.open = 0; s.trail = []; s.sw = []; s.walkT = -1;
     s.fish = Array.from({ length: 18 }, (_, i) => ({ side: i % 2 ? 1 : -1, y: TOP - 90 + Math.random() * 400, d: Math.random(), sp: 10 + Math.random() * 18, col: ['#f0a050', '#f5d04a', '#ff7a8a', '#7ad0f0', '#b0e070'][i % 5], ph: Math.random() * 6 }));

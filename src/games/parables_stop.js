@@ -55,7 +55,7 @@ function donkeyPack(c, x, y, s, t, sit, walk) {
 
 MG.add({
   id: 'stop', stage: 'parables', cmd: 'STOP!', hint: 'tap', time: 5, mood: 'desert', winText: 'Neighbor!',
-  card: { title: 'The kind neighbor', ref: 'Luke 10:25–37', kind: 'Parable', text: 'Jesus told a story about a man who was hurt and left by the road. Two leaders walked past him, but a Samaritan, a man his listeners saw as an outsider, stopped, bandaged him and took him to an inn to get better.', ask: 'Who could you stop and help this week, even someone who is not your friend yet?' },
+  card: { title: 'The kind neighbor', ref: 'Luke 10:25–37', kind: 'Parable', text: 'Jesus told a story about a man who was robbed, hurt and left by the road. A priest and a temple helper walked past him. Then a Samaritan, a man Jesus\'s listeners saw as an outsider, stopped, bandaged him and took him to an inn to get better.', ask: 'Who could you stop and help this week, even someone who is not your friend yet?' },
   init(g) {
     const s = g.s, L = g.level;
     s.v = [100, 120, 140][L] * (1 + (g.speed - 1) * 0.6); s.win = [130, 100, 75][L];

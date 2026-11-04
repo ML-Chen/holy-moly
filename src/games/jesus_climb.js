@@ -33,7 +33,7 @@ function sycamore(c) {
 
 MG.add({
   id: 'climb', stage: 'jesus', cmd: 'CLIMB!', hint: 'mash', time: 5, mood: 'desert', winText: 'I see!',
-  card: { title: 'Up a tree', ref: 'Luke 19:1–10', kind: 'Story', text: 'Zacchaeus was a rich tax collector in Jericho, and people did not like him because he cheated them. He was too short to see over the crowd, so he climbed a sycamore tree, and Jesus stopped, looked up, and said he would come to Zacchaeus\'s house that very day. Zacchaeus was so glad that he gave half of what he owned to the poor and paid back everyone he had cheated.', ask: 'Who do people leave out at school or in your neighborhood? How could you be the one who stops and says hello?' },
+  card: { title: 'Up a tree', ref: 'Luke 19:1–10', kind: 'Gospel story', text: 'The Gospel of Luke tells how Zacchaeus, a tax collector people did not like, climbed a tree to see Jesus over the crowd. Jesus said he would stay at his house that day. Zacchaeus was so glad that he promised to give half of what he had to the poor.', ask: 'Who gets left out at school or in your neighborhood? How could you be the one who says hello?' },
   init(g) {
     const s = g.s; s.need = [9, 12, 15][g.level]; s.slip = [0.04, 0.09, 0.16][g.level];
     s.h = 0; s.kick = -9; s.taps = 0; s.top = false; s.topT = 0; s.leaves = []; s.fallT = -1; s.landed = false; s.jx = -40;
