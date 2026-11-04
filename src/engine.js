@@ -2,7 +2,7 @@
 // Microgames register themselves with MG.add({...}); see docs/MICROGAMES.md for the full contract.
 const W = 360, H = 640;
 const A = { // safe audio wrapper: the game works silently if audio.js is missing or fails
-  call(fn, ...a) { try { if (window.AUD && AUD[fn]) return AUD[fn](...a); } catch (e) { console.warn('audio', fn, e); } return 0; },
+  call(fn, ...a) { try { if (typeof AUD !== 'undefined' && AUD[fn]) return AUD[fn](...a); } catch (e) { console.warn('audio', fn, e); } return 0; },
   sfx(n, o) { return A.call('sfx', n, o); }, jingle(n, s) { return A.call('jingle', n, s) || ({ ready: 1.6, win: 1.1, fail: 1.1, speedup: 1.8, grace: 2.2, gameover: 2.5, stagestart: 2, cleared: 2.5 }[n] || 1) / (s || 1); },
   music(n) { A.call('music', n); }, beat(on, o) { A.call('beat', on, o); }, tempo(b) { A.call('setTempo', b); }, babble(t, v) { return A.call('babble', t, v); },
 };
