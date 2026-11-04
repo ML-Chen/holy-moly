@@ -9,7 +9,7 @@ const FACES = [
   { skin: SK[3], robe: CL.terracotta, stripe: CL.cream, beard: '#d8d0c4', hair: HR[5], hairStyle: 'bald' },
 ];
 // door slots: x, ground y, house width, house height, wall colour
-const SLOTS = [[62, 340, 92, 100, '#d8b890'], [180, 330, 96, 120, '#e6c4b0'], [298, 340, 92, 96, '#c8b49a'], [92, 470, 108, 112, '#e8cc9a'], [268, 470, 108, 108, '#d4aa90']];
+const SLOTS = [[62, 340, 92, 100, '#d8b890'], [180, 330, 96, 120, '#e6c4b0'], [298, 340, 92, 96, '#c8b49a'], [92, 494, 108, 100, '#e8cc9a'], [268, 494, 108, 96, '#d4aa90']];
 const eo = k => 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3);
 
 function building(c, x, y, w, h, col, stable, seed) {
@@ -17,6 +17,12 @@ function building(c, x, y, w, h, col, stable, seed) {
   c.fillStyle = 'rgba(10,10,40,0.35)'; c.fillRect(-w / 2 + 4, -2, w, 6);
   {
     const g = c.createLinearGradient(-w / 2, -h, w / 2, 0); g.addColorStop(0, P.shade(col, 0.05)); g.addColorStop(1, P.shade(col, -0.35)); c.fillStyle = g; c.fillRect(-w / 2, -h, w, h);
+    const rr = P.rng(seed + 5), roof = rr();
+    if (roof < 0.4) { const dg = c.createRadialGradient(-6, -h - 22, 2, 0, -h - 6, 26); dg.addColorStop(0, P.shade(col, 0.15)); dg.addColorStop(1, P.shade(col, -0.35)); c.fillStyle = dg; c.beginPath(); c.arc(0, -h - 4, 20, Math.PI, 0); c.fill(); }
+    else if (roof < 0.75) { c.fillStyle = P.shade(col, -0.25); c.fillRect(-w / 2 + 6, -h - 22, 26, 18); c.fillStyle = '#2a1a2e'; c.beginPath(); c.moveTo(-w / 2 + 13, -h - 4); c.lineTo(-w / 2 + 13, -h - 14); c.arc(-w / 2 + 19, -h - 14, 6, Math.PI, 0); c.lineTo(-w / 2 + 25, -h - 4); c.fill(); }
+    else { c.strokeStyle = '#7a5a3a'; c.lineWidth = 2; for (const px of [-w / 2 + 8, -w / 2 + 34]) { c.beginPath(); c.moveTo(px, -h); c.lineTo(px, -h - 16); c.stroke(); } c.fillStyle = CL.terracotta; c.beginPath(); c.moveTo(-w / 2 + 4, -h - 16); c.lineTo(-w / 2 + 38, -h - 16); c.lineTo(-w / 2 + 36, -h - 10); c.lineTo(-w / 2 + 6, -h - 10); c.fill(); c.fillStyle = 'rgba(255,255,255,0.3)'; for (let i = 0; i < 4; i++) c.fillRect(-w / 2 + 6 + i * 8, -h - 16, 4, 6); }
+    // outside steps climbing to the roof
+    if (rr() < 0.5) { c.fillStyle = P.shade(col, -0.2); for (let i = 0; i < 5; i++) c.fillRect(w / 2 - 4, -12 - i * 12, 10 + i * 0, 6); c.fillStyle = P.shade(col, -0.45); c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w / 2 + 8, 0); c.lineTo(w / 2 + 8, -h * 0.6); c.closePath(); c.globalAlpha = 0.25; c.fill(); c.globalAlpha = 1; }
     c.fillStyle = P.shade(col, -0.35); c.fillRect(-w / 2 - 4, -h - 7, w + 8, 8); c.fillStyle = P.rgba('#fff0e0', 0.25); c.fillRect(-w / 2 - 4, -h - 7, w + 8, 2);
     c.fillStyle = 'rgba(30,20,50,0.25)'; c.fillRect(w * 0.2, -h, w * 0.3, h);
     // a small lit upstairs window
@@ -58,7 +64,7 @@ MG.add({
   init(g) {
     const s = g.s, n = [3, 4, 5][g.level];
     const idx = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5).slice(0, n);
-    if (g.level === 0) { idx.length = 0; idx.push(...[0, 2, 1].sort(() => Math.random() - 0.5)); }
+    if (g.level === 0) { idx.length = 0; idx.push(...[1, 3, 4]); }
     const faces = FACES.slice().sort(() => Math.random() - 0.5);
     s.doors = idx.map((k, i) => { const [x, y, w, h, col] = SLOTS[k]; return { x, y, w, h, col, face: faces[i % faces.length], open: 0, openT: -9, ph: Math.random() * 6, seed: 3 + k * 7 }; });
     s.stable = Math.floor(Math.random() * n); s.doors[s.stable].stable = true;
@@ -100,7 +106,11 @@ MG.add({
       const r = P.rng(11); for (let i = 0; i < 16; i++) { const x = i * 24 - 6 + r() * 6, h = 18 + r() * 22, y = 252 - Math.sin(i * 0.4) * 14; o.fillStyle = r() < 0.5 ? '#4a4070' : '#55497a'; o.fillRect(x, y - h, 22, h + 30); if (r() < 0.6) { o.fillStyle = '#ffd890'; o.globalAlpha = 0.7; o.fillRect(x + 8, y - h + 8, 4, 4); o.globalAlpha = 1; } }
       // the street: a cobbled lane climbing between two terraces
       const st = o.createLinearGradient(0, 300, 0, 640); st.addColorStop(0, '#5a4a6a'); st.addColorStop(1, '#3a2a40'); o.fillStyle = st; o.fillRect(0, 290, W, 350);
-      const r2 = P.rng(19); for (let i = 0; i < 160; i++) { const y = 300 + r2() * 340, x = r2() * W, sc = 0.4 + (y - 300) / 340; o.fillStyle = P.rgba(r2() < 0.5 ? '#7a6a8a' : '#2a1e32', 0.35); o.beginPath(); o.ellipse(x, y, 9 * sc, 4 * sc, 0, 0, 7); o.fill(); }
+      const r2 = P.rng(19);
+      // a soft pool of moonlight down the middle of the lane
+      const pool = o.createRadialGradient(180, 560, 10, 180, 560, 200); pool.addColorStop(0, 'rgba(220,210,255,0.16)'); pool.addColorStop(1, 'rgba(220,210,255,0)'); o.fillStyle = pool; o.fillRect(0, 360, W, 280); for (let i = 0; i < 160; i++) { const y = 300 + r2() * 340, x = r2() * W, sc = 0.4 + (y - 300) / 340; o.fillStyle = P.rgba(r2() < 0.5 ? '#7a6a8a' : '#2a1e32', 0.35); o.beginPath(); o.ellipse(x, y, 9 * sc, 4 * sc, 0, 0, 7); o.fill(); }
+      P.tree(o, 14, 640, 0.95, '#4a6a4a', 12);
+      o.save(); o.translate(330, 616); o.fillStyle = 'rgba(10,10,40,0.35)'; o.beginPath(); o.ellipse(2, 4, 34, 7, 0, 0, 7); o.fill(); const wl = o.createLinearGradient(-30, 0, 30, 0); wl.addColorStop(0, '#9a8aa0'); wl.addColorStop(1, '#5a4a6a'); o.fillStyle = wl; o.beginPath(); o.ellipse(0, 0, 30, 10, 0, 0, Math.PI); o.lineTo(-30, -22); o.ellipse(0, -22, 30, 10, 0, Math.PI, 0, true); o.closePath(); o.fill(); o.fillStyle = '#2a2040'; o.beginPath(); o.ellipse(0, -22, 26, 7, 0, 0, 7); o.fill(); o.strokeStyle = '#4a3a2a'; o.lineWidth = 3; o.beginPath(); o.moveTo(-22, -22); o.lineTo(-22, -56); o.lineTo(22, -56); o.lineTo(22, -22); o.stroke(); o.restore();
     }), 0, 0, W, H);
     // the buildings, back row then front row
     const sorted = s.doors.slice().sort((a, b) => a.y - b.y);
@@ -112,7 +122,8 @@ MG.add({
       if (d.stable) {
         if (lit) { c.save(); c.globalCompositeOperation = 'lighter'; const gl = c.createRadialGradient(d.x, d.y - 26, 4, d.x, d.y - 26, 150 * d.open); gl.addColorStop(0, 'rgba(255,210,120,0.75)'); gl.addColorStop(1, 'rgba(255,170,80,0)'); c.fillStyle = gl; c.beginPath(); c.arc(d.x, d.y - 26, 150, 0, 7); c.fill(); c.restore(); }
         door(c, d.x, d.y, d.open, lit, true, t, s.hint);
-        if (lit) { c.save(); c.globalAlpha = Math.min(1, d.open * 1.5); c.beginPath(); c.rect(d.x - 16, d.y - 60, 32, 60); c.clip(); P.goat(c, d.x + 8, d.y - 4, 0.6, { t, facing: -1 }); P.sheep(c, d.x - 4, d.y + 1, 0.62, { t, hop: true, facing: 1 }); c.restore();
+        if (lit) { c.save(); c.globalAlpha = Math.min(1, d.open * 1.5); c.beginPath(); c.rect(d.x - 16, d.y - 60, 32, 60); c.clip(); P.donkey(c, d.x + 4, d.y - 2, 0.7, { t, facing: -1 }); c.restore();
+          const out = eo((t - d.openT - 0.1) / 0.45); P.sheep(c, d.x - 8 - out * 30, d.y + 6 + out * 8, 0.75 + out * 0.15, { t, hop: true, facing: -1 }); P.goat(c, d.x + 8 + out * 30, d.y + 6 + out * 8, 0.75 + out * 0.15, { t, facing: 1 });
           c.save(); c.globalAlpha = d.open; P.dove(c, d.x + 18 + Math.sin(t * 3) * 6, d.y - 64 - Math.abs(Math.sin(t * 5)) * 6, 0.5, { t, facing: -1 }); c.restore(); }
       } else {
         door(c, d.x, d.y, d.open, lit, false, t);

@@ -241,6 +241,7 @@ function drawStages(c, t) {
     c.restore();
     c.strokeStyle = 'rgba(90,40,50,0.55)'; c.lineWidth = 2.5; roundRect(c, tile.x - tile.w / 2, tile.y - tile.h / 2, tile.w, tile.h, 18); c.stroke();
     if (tile.st) { const words = tile.st.name.split(' '); const mid = Math.ceil(words.length / 2); const l1 = words.length > 2 ? words.slice(0, mid).join(' ') : words.join(' '), l2 = words.length > 2 ? words.slice(mid).join(' ') : '';
+      if (on) { c.fillStyle = 'rgba(40,16,48,0.42)'; roundRect(c, tile.x - 32, tile.y - (l2 ? 22 : 13), 108, l2 ? 44 : 26, 12); c.fill(); }
       c.save(); if (on) { c.shadowColor = 'rgba(40,10,40,0.7)'; c.shadowBlur = 5; } const ink = on ? '#fffaf0' : '#3a2030'; P.label(c, l1, tile.x + 22, tile.y - (l2 ? 9 : 0), 15, ink, 'center', 900); if (l2) P.label(c, l2, tile.x + 22, tile.y + 9, 15, ink, 'center', 900); c.restore();
       if (!on) { c.fillStyle = 'rgba(255,250,240,0.0)'; }
       if (SAVE.d.cleared[tile.id]) { c.fillStyle = '#ffd45a'; drawStar(c, tile.x + tile.w / 2 - 14, tile.y - tile.h / 2 + 14, 9); } }
