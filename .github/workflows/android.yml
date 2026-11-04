@@ -1,9 +1,12 @@
 # Builds the Android app (APK) on GitHub's servers, signs it with the release keystore, and keeps it as a download.
 #
-# Start it in either of two ways (only people with write access to this repository can do either):
-# - Actions > "Build Android APK" > Run workflow. Leave "release" empty to only build (the APK is under the run's
-#   Artifacts), or type a tag such as android-v1.0 to also publish a GitHub Release with the APK attached.
-# - Push a tag that starts with android-v (for example: git tag android-v1.0 && git push origin android-v1.0).
+# It runs by itself whenever a push to main changes the Android app (android/**) or this workflow, and publishes a
+# release tagged android-v1.<run number> with the APK. Game changes (src/**) don't need a new APK: the installed app
+# downloads them as signed updates from GitHub Pages. You can also start it by hand:
+# - Actions > "Build Android APK" > Run workflow. Leave "release" empty to publish an automatic release, or type a
+#   tag such as android-v2.0 to use that tag.
+# - Push a tag that starts with android-v (for example: git tag android-v2.0 && git push origin android-v2.0).
+# The newest APK is always at https://github.com/ML-Chen/holy-moly/releases/latest/download/holymoly.apk
 #
 # Secrets it needs (Settings > Secrets and variables > Actions; see docs/ANDROID.md for how to make them):
 #   HOLYMOLY_UPDATE_KEY         PEM private key for signed game updates; the app gets only its public half
@@ -17,10 +20,12 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: 'Also publish a GitHub Release with this tag (for example android-v1.0). Leave empty to only build.'
+        description: 'Release tag (for example android-v2.0). Leave empty for an automatic android-v1.<run number> tag.'
         required: false
         default: ''
   push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/android.yml']
     tags: ['android-v*']
 permissions:
   contents: write
@@ -92,16 +97,16 @@ jobs:
           if-no-files-found: error
 
       - name: Publish a GitHub Release with the APK
-        if: startsWith(github.ref, 'refs/tags/android-v') || startsWith(inputs.release, 'android-v')
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release }}
+          TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release || format('android-v1.{0}', github.run_number) }}
         run: |
           case "$TAG" in android-v[0-9]*) ;; *) echo "::error::Release tags must look like android-v1.0 (got '$TAG')"; exit 1 ;; esac
-          notes="Holy Moly! for Android. Download holymoly.apk below and open it on the phone. SHA-256: $(cut -d' ' -f1 dist/holymoly.apk.sha256)"
+          notes="Holy Moly! for Android. Download holymoly.apk below and open it on the phone; it installs over an earlier version and keeps your saves. SHA-256: $(cut -d' ' -f1 dist/holymoly.apk.sha256)"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/holymoly.apk --repo "$GITHUB_REPOSITORY" --clobber
           else
             gh release create "$TAG" dist/holymoly.apk --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
               --title "Holy Moly! for Android ${TAG#android-v}" --notes "$notes" --latest
           fi
+          echo "Published $TAG: https://github.com/$GITHUB_REPOSITORY/releases/latest/download/holymoly.apk" >> "$GITHUB_STEP_SUMMARY"
