@@ -34,10 +34,46 @@ const STAGES = [
 const STAGE = Object.fromEntries(STAGES.map(s => [s.id, s]));
 
 // ---------------- save data ----------------
+// Saves: written to this browser's local storage at once, and to the viewer's private storage on Claude's
+// servers (the artifact 'db' capability, data/users/<id>/save) when the page runs inside Claude. On load the two
+// are merged so nothing earned in either place is lost.
 const SAVE = {
-  key: 'holymoly1', d: { best: {}, cleared: {}, cards: {}, remixBest: 0, muted: false },
-  load() { try { const v = JSON.parse(localStorage.getItem(this.key) || 'null'); if (v) Object.assign(this.d, v); } catch (e) { } },
-  save() { try { localStorage.setItem(this.key, JSON.stringify(this.d)); } catch (e) { } },
+  key: 'holymoly1', d: { best: {}, cleared: {}, cards: {}, remixBest: 0, muted: false, savedAt: 0 },
+  db: null, uid: null, busy: false, again: false, timer: null,
+  // merge(a, b): union of cards and cleared stages, best scores, and the newer mute setting
+  merge(a, b) {
+    a = a || {}; b = b || {}; const out = { best: {}, cleared: {}, cards: {}, remixBest: Math.max(a.remixBest || 0, b.remixBest || 0), savedAt: Math.max(a.savedAt || 0, b.savedAt || 0) };
+    for (const k of ['cards', 'cleared']) out[k] = Object.assign({}, a[k] || {}, b[k] || {});
+    for (const k of new Set([...Object.keys(a.best || {}), ...Object.keys(b.best || {})])) out.best[k] = Math.max((a.best || {})[k] || 0, (b.best || {})[k] || 0);
+    out.muted = ((b.savedAt || 0) >= (a.savedAt || 0) ? b.muted : a.muted) || false;
+    return out;
+  },
+  load() { try { const v = JSON.parse(localStorage.getItem(this.key) || 'null'); if (v) this.d = this.merge(this.d, v); } catch (e) { } },
+  save() {
+    this.d.savedAt = Date.now();
+    try { localStorage.setItem(this.key, JSON.stringify(this.d)); } catch (e) { }
+    clearTimeout(this.timer); this.timer = setTimeout(() => this.push(), 600);
+  },
+  async push() {
+    if (!this.db || !this.uid) return; if (this.busy) { this.again = true; return; }
+    this.busy = true;
+    try { await this.db.doc('data/users/' + this.uid + '/save').set({ json: JSON.stringify(this.d), savedAt: this.d.savedAt }); } catch (e) { console.warn('cloud save failed', e && (e.code || e.message)); }
+    this.busy = false; if (this.again) { this.again = false; this.push(); }
+  },
+  async connect() {
+    try {
+      if (!window.claude || !claude.use) return;
+      const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]); if (!db || !user) return;
+      const uid = await user.id(); if (!uid) return;
+      const snap = await Promise.race([db.doc('data/users/' + uid + '/save').get(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 10000))]);
+      let remote = null; if (snap && snap.exists) { try { remote = JSON.parse(snap.data().json); } catch (e) { } }
+      this.db = db; this.uid = uid;
+      const before = JSON.stringify(this.d); this.d = this.merge(this.d, remote);
+      try { localStorage.setItem(this.key, JSON.stringify(this.d)); } catch (e) { }
+      if (!remote || JSON.stringify(remote) !== JSON.stringify(this.d)) this.push();
+      if (before !== JSON.stringify(this.d)) { A.call('mute', !!this.d.muted); }
+    } catch (e) { console.warn('cloud save unavailable', e && (e.code || e.message)); }
+  },
 };
 
 // ---------------- canvas, scaling and input ----------------
@@ -509,6 +545,6 @@ window.HM = {
 };
 
 function boot() {
-  SAVE.load(); if (SAVE.d.muted) A.call('mute', true);
+  SAVE.load(); if (SAVE.d.muted) A.call('mute', true); SAVE.connect();
   if (!testMode) requestAnimationFrame(frame); else render();
 }
