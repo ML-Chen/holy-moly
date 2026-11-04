@@ -30,7 +30,7 @@ function column(c, x, base, top, w) {
 
 MG.add({
   id: 'drop', stage: 'jesus', cmd: 'DROP!', hint: 'tap', time: 5, mood: 'desert', winText: 'Mercy!',
-  card: { title: 'Nobody throws a stone', ref: 'John 8:2–11', kind: 'Gospel story', text: 'The Gospel of John tells how some leaders wanted to punish a woman by throwing stones at her. Jesus said that whoever had never done wrong could throw the first stone, and one by one they walked away. Then Jesus told her to go and begin again.', ask: 'When someone makes a mistake, how can you choose to be kind to them instead of piling on?' },
+  card: { title: 'Nobody throws a stone', ref: 'John 8:2–11', kind: 'Gospel story', text: 'The Gospel of John tells how some leaders wanted to punish a woman by throwing stones at her. Jesus said that whoever had never done wrong could throw the first stone, and one by one they walked away. Then Jesus said to her, "Neither do I condemn you. Go, and from now on do not sin again."', ask: 'When someone makes a mistake, how can you choose to be kind to them instead of piling on?' },
   init(g) {
     const s = g.s, n = [3, 4, 6][g.level];
     const order = [0, 1, 2, 3, 4, 5].slice(0, n), looks = LOOKS.slice().sort(() => Math.random() - 0.5);
