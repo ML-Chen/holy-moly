@@ -255,10 +255,13 @@ const P = (() => {
       if (o.sash) { ctx.fillStyle = o.sash; ctx.beginPath(); ctx.moveTo(-12, bodyTop + 13); ctx.lineTo(12, bodyTop + 13); ctx.lineTo(12.5, bodyTop + 18); ctx.lineTo(-12.5, bodyTop + 18); ctx.fill(); }
     }
     // arms
-    limb(ctx, -sx, shoulderY, arm[0][0], arm[0][1], 5.5, shade(robe, 0.05), outline);
-    limb(ctx, sx, shoulderY, arm[1][0], arm[1][1], 5.5, shade(robe, 0.05), outline);
+    // arms: raised arms are drawn last, in front of the hair, so they never look like they grow out of the head
+    const raised = arm.map(([hx, hy]) => hy < shoulderY - 4);
+    const drawArm = (i) => { limb(ctx, i ? sx : -sx, shoulderY, arm[i][0], arm[i][1], 5.5, shade(robe, 0.05), outline); ctx.fillStyle = skin; ctx.strokeStyle = skinLine; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(arm[i][0], arm[i][1], 3.6, 0, 7); ctx.fill(); ctx.stroke(); };
+    if (!raised[0]) limb(ctx, -sx, shoulderY, arm[0][0], arm[0][1], 5.5, shade(robe, 0.05), outline);
+    if (!raised[1]) limb(ctx, sx, shoulderY, arm[1][0], arm[1][1], 5.5, shade(robe, 0.05), outline);
     ctx.fillStyle = skin; ctx.strokeStyle = skinLine; ctx.lineWidth = 1.2;
-    for (const [hx, hy] of arm) { ctx.beginPath(); ctx.arc(hx, hy, 3.6, 0, 7); ctx.fill(); ctx.stroke(); }
+    arm.forEach(([hx, hy], i) => { if (raised[i]) return; ctx.beginPath(); ctx.arc(hx, hy, 3.6, 0, 7); ctx.fill(); ctx.stroke(); });
     if (o.hold) { ctx.save(); o.hold(ctx, (arm[0][0] + arm[1][0]) / 2, (arm[0][1] + arm[1][1]) / 2); ctx.restore(); }
     // neck + head
     ctx.fillStyle = skin; ctx.fillRect(-3.5, bodyTop - 4, 7, 6); ctx.fillStyle = 'rgba(80,30,30,0.18)'; ctx.fillRect(-3.5, bodyTop - 4, 7, 3);
@@ -271,7 +274,7 @@ const P = (() => {
     const hg = ctx.createRadialGradient(-headR * 0.35, headY - headR * 0.4, 2, 0, headY, headR * 1.1); hg.addColorStop(0, shade(skin, 0.12)); hg.addColorStop(1, shade(skin, -0.06));
     ctx.fillStyle = hg; ctx.strokeStyle = skinLine; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(0, headY, headR, headR * 0.98, 0, 0, 7); ctx.fill(); ctx.stroke();
     // ears
-    if (true) { ctx.fillStyle = skin; for (const ex2 of [-headR + 0.5, headR - 0.5]) { ctx.beginPath(); ctx.ellipse(ex2, headY + 2, 3, 4, 0, 0, 7); ctx.fill(); ctx.stroke(); } }
+    if (o.hairStyle !== 'long' && o.hairStyle !== 'curly' && o.head !== 'scarf') { ctx.fillStyle = skin; for (const ex2 of [-headR + 0.5, headR - 0.5]) { ctx.beginPath(); ctx.ellipse(ex2, headY + 2, 3, 4, 0, 0, 7); ctx.fill(); ctx.stroke(); } }
     // beard
     if (o.beard) { ctx.fillStyle = o.beard === true ? hair : o.beard; ctx.beginPath(); ctx.moveTo(-headR * 0.85, headY + 2); ctx.quadraticCurveTo(-headR * 0.7, headY + headR * 1.25, 0, headY + headR * 1.3); ctx.quadraticCurveTo(headR * 0.7, headY + headR * 1.25, headR * 0.85, headY + 2); ctx.quadraticCurveTo(headR * 0.5, headY + headR * 0.75, 0, headY + headR * 0.72); ctx.quadraticCurveTo(-headR * 0.5, headY + headR * 0.75, -headR * 0.85, headY + 2); ctx.fill(); }
     face(ctx, 0, headY - 1, headR, { expr: o.expr || 'happy', facing: 1, blink: o.blink });
@@ -293,6 +296,7 @@ const P = (() => {
     else if (o.hairStyle === 'bun') { ctx.beginPath(); ctx.arc(0, headY - headR - 3, headR * 0.42, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(0, headY - headR * 0.45, headR * 1.0, headR * 0.6, 0, Math.PI, 0); ctx.fill(); }
     else { ctx.beginPath(); ctx.moveTo(-headR - 0.5, headY + 1); ctx.quadraticCurveTo(-headR * 1.05, headY - headR * 1.15, 0, headY - headR * 1.05); ctx.quadraticCurveTo(headR * 1.05, headY - headR * 1.15, headR + 0.5, headY + 1); ctx.quadraticCurveTo(headR * 0.6, headY - headR * 0.55, headR * 0.1, headY - headR * 0.62); ctx.quadraticCurveTo(-headR * 0.3, headY - headR * 0.3, -headR - 0.5, headY + 1); ctx.fill(); ctx.fillStyle = rgba('#ffffff', 0.18); ctx.beginPath(); ctx.ellipse(-headR * 0.3, headY - headR * 0.8, headR * 0.35, headR * 0.1, -0.3, 0, 7); ctx.fill(); }
     if (o.head === 'crown') { ctx.fillStyle = '#f2c94c'; ctx.strokeStyle = '#a8781e'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-10, headY - headR + 2); for (let i = 0; i <= 4; i++) { ctx.lineTo(-10 + i * 5, headY - headR - (i % 2 ? 2 : 10)); } ctx.lineTo(10, headY - headR + 2); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    raised.forEach((r, k) => { if (r) drawArm(k); });
     ctx.restore();
   }
 
