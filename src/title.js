@@ -31,7 +31,7 @@ function PANEL_TITLE(ctx, t) {
     ];
     for (const [x, y, o] of back) P.person(ctx, x, y, 0.92, { ...o, t, phase: x });
     for (const [x, y, o] of front) P.person(ctx, x, y, 1.05, { ...o, t, phase: x });
-    P.prideFlag(ctx, 177, 562, 1.05, t); // held up in the teen's raised hand
+    P.prideFlag(ctx, 186, 560, 1.05, t); // held up in the teen's raised hand
     P.sheep(ctx, 338, 634, 0.85, { t, facing: -1 }); P.dove(ctx, 92, 250, 1.1, { t: t + 0.2, branch: true });
     P.vignette(ctx, W, H, 0.3); P.grain(ctx, W, H, 0.07);
   }

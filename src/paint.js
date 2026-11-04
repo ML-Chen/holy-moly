@@ -232,7 +232,7 @@ const P = (() => {
     if (o.outfit !== 'modern') { ctx.fillStyle = '#6b4226'; ctx.beginPath(); ctx.ellipse(-6, -1.5, 5, 3, 0, 0, 7); ctx.ellipse(7, -1.5, 5, 3, 0, 0, 7); ctx.fill(); }
     // arms behind for some poses
     const shoulderY = bodyTop + 7, sx = 9;
-    const arm = { down: [[-13, bodyTop + 26], [13, bodyTop + 26]], up: [[-15, bodyTop - 16], [15, bodyTop - 16]], wave: [[-13, bodyTop + 26], [17, bodyTop - 14 + Math.sin(t * 10) * 4]], out: [[-21, bodyTop + 10], [21, bodyTop + 10]], hold: [[-7, bodyTop + 18], [7, bodyTop + 18]], cheer: [[-17, bodyTop - 12], [17, bodyTop - 12]], reach: [[-12, bodyTop + 24], [22, bodyTop + 2]], pray: [[-2, bodyTop + 10], [2, bodyTop + 10]], raise: [[-13, bodyTop + 26], [17, bodyTop - 14]] }[o.arms || 'down'];
+    const arm = { down: [[-13, bodyTop + 26], [13, bodyTop + 26]], up: [[-23, bodyTop - 20], [23, bodyTop - 20]], wave: [[-13, bodyTop + 26], [26 + Math.sin(t * 10) * 3, bodyTop - 18]], out: [[-21, bodyTop + 10], [21, bodyTop + 10]], hold: [[-7, bodyTop + 18], [7, bodyTop + 18]], cheer: [[-26, bodyTop - 14], [26, bodyTop - 14]], reach: [[-12, bodyTop + 24], [22, bodyTop + 2]], pray: [[-2, bodyTop + 10], [2, bodyTop + 10]], raise: [[-13, bodyTop + 26], [26, bodyTop - 18]] }[o.arms || 'down'];
     if (o.outfit === 'modern') {
       // modern clothes: trousers or a skirt, a shirt or sweater, sneakers; optional clergy collar and stole
       const pants = o.pants || '#3f5a8a', pl = shade(pants, -0.45);
